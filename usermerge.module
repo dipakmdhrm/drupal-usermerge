@@ -1,0 +1,115 @@
+<?
+
+/**
+ * @file
+ * Main file for the user merge module, which re-assigns data from an abandoned account to a live one.
+ *
+ */
+
+/**
+ * Implementation of hook_perm().
+ */
+function usermerge_perm() {
+  return array('merge users');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function usermerge_menu() {
+  $items['admin/user/merge'] = array(
+    'title' => 'Merge users',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('usermerge_merge_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('merge users'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Form to collect the two uids.
+ *
+ */
+function usermerge_merge_form() {
+
+  // Find out what's supported.
+  $supported_actions = module_invoke_all('usermerge_actions_supported');
+  $form['general']['supported_actions'] = array(
+    '#value' => t('Supported actions:') . theme('item_list', $supported_actions)
+  );
+
+  $form['general']['usermerge_user_delete'] = array(
+    '#type' => 'textfield',
+    '#title' => t('The name of the account to remove'),
+    '#description' => t('All content associated with this user will be changed so it is associated with the other user.'),
+    '#autocomplete_path' => 'user/autocomplete',
+    '#required' => TRUE,
+  );
+
+  $form['general']['usermerge_user_keep'] = array(
+    '#type' => 'textfield',
+    '#title' => t('The name of the account to keep'),
+    '#description' => t('The account to use in the future.'),
+    '#autocomplete_path' => 'user/autocomplete',
+    '#required' => TRUE,
+  );
+
+  $form['general']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Merge accounts now!'),
+  );
+
+  return $form;
+}
+
+function usermerge_merge_form_validate($form, &$form_state) {
+  // Can't be the same user.
+  if ($form_state['values']['usermerge_user_keep'] == $form_state['values']['usermerge_user_delete']) {
+    form_set_error('usermerge_user','You cannot have the same username in both fields.');
+  }
+
+  // Must exist. We store these in the form_state['values'] so that we don't have to load again later.
+  if (!$form_state['values']['user_to_delete'] = user_load(array('name' => $form_state['values']['usermerge_user_delete']))) {
+    form_set_error('usermerge_user_delete', 'This user name does not exist.');
+  }
+  if (!$form_state['values']['user_to_keep'] = user_load(array('name' => $form_state['values']['usermerge_user_keep']))) {
+    form_set_error('usermerge_user_keep', 'This user name does not exist.');
+  }
+}
+
+function usermerge_merge_form_submit($form, &$form_state) {
+  module_invoke_all('usermerge_merge_users', $form_state['values']['user_to_delete'], $form_state['values']['user_to_keep']);
+}
+
+/**
+ * Implement hook_usermerge_actions_supported().
+ */
+function usermerge_usermerge_actions_supported() {
+  return array(
+    'node' => t('Change all pieces of content and the revisions to be associated with the new account.'),
+    'comment' => t('Associate comments with the new account.'),
+    'user' => t('Block the user account.'),
+    'profile' => t('Merge profile data using the new account where it is populated.')
+  );
+}
+
+/**
+ * Implement hook_usermerge_merge_users().
+ */
+function usermerge_usermerge_merge_users($user_to_delete, $user_to_keep) {
+  // Comment: change the uid to the new one.
+  db_query('UPDATE {comments} SET uid = %d where uid = %d', $user_to_keep->uid, $user_to_delete->uid);
+
+  // Node: change uid of node and revisions to the new one.
+  db_query('UPDATE {node} SET uid = %d where uid = %d', $user_to_keep->uid, $user_to_delete->uid);
+  db_query('UPDATE {node_revisions} SET uid = %d where uid = %d', $user_to_keep->uid, $user_to_delete->uid);
+
+  // Profile: merge the fields. (blech)
+
+  // Block the old user.
+  user_block_user_action($user_to_delete);
+}
+

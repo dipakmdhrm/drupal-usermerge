@@ -79,22 +79,62 @@ function usermerge_merge_form_validate($form, &$form_state) {
     form_set_error('usermerge_user','You cannot have the same username in both fields.');
   }
 
-  // Must exist. We store these in the form_state['values'] so that we don't have to load again later.
-  if (!$form_state['values']['user_to_delete'] = user_load(array('name' => $form_state['values']['usermerge_user_delete']))) {
+  // Load up the users. We store these in the form_state['values'] so that we don't have to load again later.
+  $form_state['values']['user_to_delete'] = user_load(array('name' => $form_state['values']['usermerge_user_delete']));
+  $form_state['values']['user_to_keep'] = user_load(array('name' => $form_state['values']['usermerge_user_keep']));
+
+  // Use the validat helper function.
+  usermerge_validate_merge($form_state['values']['user_to_delete'], $form_state['values']['user_to_keep']);
+
+}
+
+/**
+ * Helper validation function used by the form submit and the API.
+ *
+ * @param unknown_type $user_to_delete
+ * @param unknown_type $user_to_keep
+ */
+function usermerge_validate_merge($user_to_delete, $user_to_keep) {
+  $valid = TRUE;
+  if (empty($user_to_delete->uid)) {
     form_set_error('usermerge_user_delete', 'This user name does not exist.');
+    $valid = FALSE;
   }
-  if (!$form_state['values']['user_to_keep'] = user_load(array('name' => $form_state['values']['usermerge_user_keep']))) {
+  if (empty($user_to_keep->uid)) {
     form_set_error('usermerge_user_keep', 'This user name does not exist.');
+    $valid = FALSE;
   }
 
   // Don't remove UID 1.
-  if ($form_state['values']['user_to_delete']->uid == 1) {
+  if ($user_to_delete->uid == 1) {
     form_set_error('usermerge_user_delete', 'Woah buddy, blocking user 1 is not a good idea.');
+    $valid = FALSE;
   }
+  return $valid;
 }
 
 function usermerge_merge_form_submit($form, &$form_state) {
-  module_invoke_all('usermerge_merge_users', $form_state['values']['user_to_delete'], $form_state['values']['user_to_keep']);
+  usermerge_do_the_merge($form_state['values']['user_to_delete'], $form_state['values']['user_to_keep']);
+}
+
+/**
+ * The function to do the work.  Custom developers: use this as your API entry point.
+ *
+ * @param object $user_to_delete
+ *   A fully loaded user object from user_load() that will be merged and blocked.
+ * @param object $user_to_keep
+ *   A fully loaded user object from user_load() that will be merged and retained.
+ * @return boolean
+ *   TRUE if they are merged, FALSE if the validation failed.
+ */
+function usermerge_do_the_merge($user_to_delete, $user_to_keep) {
+  if (usermerge_validate_merge($user_to_delete, $user_to_keep)) {
+    module_invoke_all('usermerge_merge_users', $user_to_delete, $user_to_keep);
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**

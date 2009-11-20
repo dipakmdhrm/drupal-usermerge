@@ -25,6 +25,14 @@ function usermerge_menu() {
     'access arguments' => array('merge users'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['usermerge'] = array(
+    'title' => 'Merge users',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('usermerge_merge_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('merge users'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
   return $items;
 }
@@ -78,6 +86,11 @@ function usermerge_merge_form_validate($form, &$form_state) {
   if (!$form_state['values']['user_to_keep'] = user_load(array('name' => $form_state['values']['usermerge_user_keep']))) {
     form_set_error('usermerge_user_keep', 'This user name does not exist.');
   }
+
+  // Don't remove UID 1.
+  if ($form_state['values']['user_to_delete']->uid == 1) {
+    form_set_error('usermerge_user_delete', 'Woah buddy, blocking user 1 is not a good idea.');
+  }
 }
 
 function usermerge_merge_form_submit($form, &$form_state) {
@@ -92,7 +105,8 @@ function usermerge_usermerge_actions_supported() {
     'node' => t('Change all pieces of content and the revisions to be associated with the new account.'),
     'comment' => t('Associate comments with the new account.'),
     'user' => t('Block the user account.'),
-    'profile' => t('Merge profile data using the new account where it is populated.')
+    'user_roles' => t('Migrate user roles to the new user account.'),
+    'profile' => t('Merge profile data using the new account where it is populated.'),
   );
 }
 
@@ -109,7 +123,21 @@ function usermerge_usermerge_merge_users($user_to_delete, $user_to_keep) {
 
   // Profile: merge the fields. (blech)
 
+  //Update roles.
+  $merged_roles = $user_to_keep->roles + $user_to_delete->roles;
+
+  // First, remove all roles from the user to keep to prevent duplicate key errors.
+  db_query("DELETE FROM {users_roles} WHERE uid = %d", $user_to_keep->uid);
+  // Then add them on to the user to keep.
+  foreach (array_keys($merged_roles) as $rid) {
+    if (!in_array($rid, array(DRUPAL_ANONYMOUS_RID, DRUPAL_AUTHENTICATED_RID))) {
+      db_query('INSERT INTO {users_roles} (uid, rid) VALUES (%d, %d)', $user_to_keep->uid, $rid);
+    }
+  }
   // Block the old user.
   user_block_user_action($user_to_delete);
+
+  // Success!
+  drupal_set_message(t('We successfully merged %user_to_delete into %user_to_keep', array('%user_to_delete' => $user_to_delete->name, '%user_to_keep' => $user_to_keep->name)));
 }
 

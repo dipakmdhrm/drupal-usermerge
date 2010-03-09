@@ -160,6 +160,15 @@ function og_usermerge_actions_supported() {
 }
 
 /**
+ * Implement hook_usermerge_actions_supported() on behalf of notifications.
+ */
+function notifications_usermerge_actions_supported() {
+  return array(
+    'notifications' => t('Merge notification and messaging settings'),
+  );
+}
+
+/**
  * Implement hook_usermerge_merge_users().
  */
 function usermerge_usermerge_merge_users($user_to_delete, $user_to_keep) {
@@ -205,4 +214,24 @@ function og_usermerge_merge_users($user_to_delete, $user_to_keep) {
   }
   // Set blocked-user to inactive.
   db_query("UPDATE {og_uid} SET is_active = 0 WHERE uid = %d", $user_to_delete->uid);
+}
+
+/**
+ * Implement hook_usermerge_merge_users() on behalf of notifications.
+ */
+function notifications_usermerge_merge_users($user_to_delete, $user_to_keep) {
+  // Get blocked-user's notifications.
+  $blocked = array();
+  $result = db_query("SELECT sid FROM {notifications} WHERE uid = %d". $user_to_delete->uid);
+  while ($record = db_fetch_array($result)) {
+    $blocked[] = $record['sid'];
+  }
+  if (!empty($blocked)) {
+    // Delete notification settings.
+    db_query("DELETE FROM {notifications} WHERE uid = %d", $user_to_delete->uid);
+    // Delete fields of blocked-user's notifications settings, they aren't used.
+    db_query("DELETE FROM {notifications_fields} WHERE sid IN (%s)", implode(',', $blocked));
+  }
+  // Delete notifications in the queue for blocked-user.
+  db_query("DELETE FROM {notifications_queue} WHERE uid = %d", $user_to_delete->uid);
 }

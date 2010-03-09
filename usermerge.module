@@ -151,6 +151,15 @@ function usermerge_usermerge_actions_supported() {
 }
 
 /**
+ * Implement hook_usermerge_actions_supported() on behalf of og.
+ */
+function og_usermerge_actions_supported() {
+  return array(
+    'og' => t('Merge group membership.'),
+  );
+}
+
+/**
  * Implement hook_usermerge_merge_users().
  */
 function usermerge_usermerge_merge_users($user_to_delete, $user_to_keep) {
@@ -162,7 +171,7 @@ function usermerge_usermerge_merge_users($user_to_delete, $user_to_keep) {
   db_query('UPDATE {node_revisions} SET uid = %d where uid = %d', $user_to_keep->uid, $user_to_delete->uid);
 
   // Profile: merge the fields. (blech)
-
+  
   //Update roles.
   $merged_roles = $user_to_keep->roles + $user_to_delete->roles;
 
@@ -181,3 +190,19 @@ function usermerge_usermerge_merge_users($user_to_delete, $user_to_keep) {
   drupal_set_message(t('We successfully merged %user_to_delete into %user_to_keep', array('%user_to_delete' => $user_to_delete->name, '%user_to_keep' => $user_to_keep->name)));
 }
 
+/**
+ * Implement hook_usermerge_merge_users() on behalf of og.
+ */
+function og_usermerge_merge_users($user_to_delete, $user_to_keep) {
+  // Get groups kept-user is not a member of but blocked-user is.
+  $result = db_query("SELECT nid FROM {og_uid} WHERE uid = %d AND nid NOT IN (SELECT nid FROM {og_uid} WHERE uid = %d)", $user_to_delete->uid, $user_to_keep->uid);
+  while ($record = db_fetch_array($result)) {
+    $groups[] = $record['nid'];
+  }
+  if (!empty($groups)) {
+    // Update old user's groups to kept-user if kept-user is not already a member.
+    db_query("UPDATE {og_uid} SET uid = %d WHERE uid = %d AND nid IN (%s)", $user_to_keep->uid, $user_to_delete->uid, implode(',', $groups));
+  }
+  // Set blocked-user to inactive.
+  db_query("UPDATE {og_uid} SET is_active = 0 WHERE uid = %d", $user_to_delete->uid);
+}

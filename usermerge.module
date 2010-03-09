@@ -146,6 +146,14 @@ function usermerge_usermerge_actions_supported() {
     'comment' => t('Associate comments with the new account.'),
     'user' => t('Block the user account.'),
     'user_roles' => t('Migrate user roles to the new user account.'),
+  );
+}
+
+/**
+ * Implement hook_usermerge_actions_supported() on behalf of profile module.
+ */
+function profile_usermerge_actions_supported() {
+  return array(
     'profile' => t('Merge profile data using the new account where it is populated.'),
   );
 }
@@ -179,8 +187,6 @@ function usermerge_usermerge_merge_users($user_to_delete, $user_to_keep) {
   db_query('UPDATE {node} SET uid = %d where uid = %d', $user_to_keep->uid, $user_to_delete->uid);
   db_query('UPDATE {node_revisions} SET uid = %d where uid = %d', $user_to_keep->uid, $user_to_delete->uid);
 
-  // Profile: merge the fields. (blech)
-  
   //Update roles.
   $merged_roles = $user_to_keep->roles + $user_to_delete->roles;
 
@@ -234,4 +240,24 @@ function notifications_usermerge_merge_users($user_to_delete, $user_to_keep) {
   }
   // Delete notifications in the queue for blocked-user.
   db_query("DELETE FROM {notifications_queue} WHERE uid = %d", $user_to_delete->uid);
+}
+
+/**
+ * Implement hook_usermerge_merge_users() on behalf of profile module.
+ */
+function profile_usermerge_merge_users($user_to_delete, $user_to_keep) {
+  // Get kept-user's filled profile values.
+  $result = db_query("SELECT fid FROM {profile_values} WHERE uid = %d AND VALUE != ''", $user_to_keep->uid);
+  $kept = array();
+  while ($record = db_fetch_array($result)) {
+    $kept[] = $record['fid'];
+  }
+  if (!empty($kept)) {
+    // Remove profile values for blocked-user that kept-user has.
+    db_query('DELETE FROM {profile_values} WHERE uid = %d AND fid IN (%s)', $user_to_delete->uid, implode(',', $kept));
+  }
+  // Remove empty profile values for kept-user.
+  db_query("DELETE FROM {profile_values} WHERE uid = %d AND VALUE = ''", $user_to_keep->uid);
+  // Change uid.
+  db_query('UPDATE {profile_values} SET uid = %d WHERE uid = %d', $user_to_keep->uid, $user_to_delete->uid);
 }

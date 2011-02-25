@@ -1,4 +1,3 @@
-; $Id$
 name = User merge
 description = Creates an extensible way to merge users together. The base module provides bonus support for nodes, comments, and profile since those are in Drupal core.
 core = 6.x

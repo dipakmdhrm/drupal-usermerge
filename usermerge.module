@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * @file
  * Main file for the user merge module, which re-assigns data from an abandoned account to a live one.

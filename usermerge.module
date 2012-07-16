@@ -175,12 +175,15 @@ function profile_usermerge_actions_supported() {
  */
 function usermerge_usermerge_merge_users($user_to_delete, $user_to_keep) {
   // Comment: change the uid to the new one.
-  db_update('comment')
-    ->fields(array(
-            'uid' => $user_to_keep->uid,
-    ))
-    ->condition('uid', $user_to_delete->uid, '=')
-    ->execute();
+
+  if (module_exists('comment')) {
+    db_update('comment')
+      ->fields(array(
+              'uid' => $user_to_keep->uid,
+      ))
+      ->condition('uid', $user_to_delete->uid, '=')
+      ->execute();
+  }
 
 //updating node table
   db_update('node')

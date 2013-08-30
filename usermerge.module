@@ -21,13 +21,13 @@ function usermerge_permission() {
  * Implements hook_menu().
  */
 function usermerge_menu() {
-  $items['admin/user/merge'] = array(
+  $items['admin/people/merge'] = array(
     'title' => 'Merge users',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('usermerge_merge_form'),
     'access callback' => 'user_access',
     'access arguments' => array('merge users'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_ACTION,
   );
   $items['usermerge'] = array(
     'title' => 'Merge users',

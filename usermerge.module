@@ -177,51 +177,54 @@ function usermerge_usermerge_merge_users($user_to_delete, $user_to_keep) {
   // Comment: change the uid to the new one.
   db_update('comment')
     ->fields(array(
-            'uid' => $user_to_keep->uid,
-    ))
+    'uid' => $user_to_keep->uid,
+  ))
     ->condition('uid', $user_to_delete->uid, '=')
     ->execute();
 
-//updating node table
+  //updating node table
   db_update('node')
-  ->fields(array(
+    ->fields(array(
     'uid' => $user_to_keep->uid,
   ))
-  ->condition('uid', $user_to_delete->uid, '=')
-  ->execute();
+    ->condition('uid', $user_to_delete->uid, '=')
+    ->execute();
 
-//updating node_revisions table
+  //updating node_revisions table
   db_update('node_revision')
-  ->fields(array(
+    ->fields(array(
     'uid' => $user_to_keep->uid,
   ))
-  ->condition('uid', $user_to_delete->uid, '=')
-  ->execute();
+    ->condition('uid', $user_to_delete->uid, '=')
+    ->execute();
 
   //Update roles
   $merged_roles = $user_to_keep->roles + $user_to_delete->roles;
 
   // First, remove all roles from the user to keep to prevent duplicate key errors.
   db_delete('users_roles')
-  ->condition('uid', $user_to_keep->uid)
-  ->execute();
+    ->condition('uid', $user_to_keep->uid)
+    ->execute();
 
   // Then add them on to the user to keep.
   foreach (array_keys($merged_roles) as $rid) {
     if (!in_array($rid, array(DRUPAL_ANONYMOUS_RID, DRUPAL_AUTHENTICATED_RID))) {
       $id = db_insert('users_roles')
-       ->fields(array(
-          'uid' => $user_to_keep->uid,
-          'rid' => $rid,
-        ))
-     ->execute();
+        ->fields(array(
+        'uid' => $user_to_keep->uid,
+        'rid' => $rid,
+      ))
+        ->execute();
     }
   }
   // Block the old user.
   user_block_user_action($user_to_delete);
 
   // Success!
-  drupal_set_message(t('We successfully merged %user_to_delete into %user_to_keep', array('%user_to_delete' => $user_to_delete->name, '%user_to_keep' => $user_to_keep->name)));
+  drupal_set_message(t('We successfully merged %user_to_delete into %user_to_keep', array(
+    '%user_to_delete' => $user_to_delete->name,
+    '%user_to_keep' => $user_to_keep->name
+  )));
 }
 
 /**
@@ -230,31 +233,31 @@ function usermerge_usermerge_merge_users($user_to_delete, $user_to_keep) {
 function profile_usermerge_merge_users($user_to_delete, $user_to_keep) {
   // retrieve kept-user's user field values
   if (module_exists('profile')) { //testing for profile, which is hidden in D6
-      $result = db_query("SELECT fid FROM {profile_values} WHERE uid = :uid AND VALUE <> ''", array(':uid' => $user_to_keep->uid));
-      $kept = array();
-      while ($record = db_fetch_array($result)) {
-        $kept[] = $record['fid'];
-      }
-      if (!empty($kept)) {
-         // Remove profile values for blocked-user that kept-user has.
-        db_delete('profile_values')
+    $result = db_query("SELECT fid FROM {profile_value} WHERE uid = :uid AND VALUE <> ''", array(':uid' => $user_to_keep->uid));
+    $kept = array();
+    foreach ($result as $record) {
+      $kept[] = $record->fid;
+    }
+    if (!empty($kept)) {
+      // Remove profile values for blocked-user that kept-user has.
+      db_delete('profile_value')
         ->condition('uid', $user_to_delete->uid)
-        ->condition('fid', implode(',', $kept), 'IN')
+        ->condition('fid', $kept, 'IN')
         ->execute();
-      }
+    }
 
-      // Remove empty profile values for kept-user.
-      db_delete('profile_values')
+    // Remove empty profile values for kept-user.
+    db_delete('profile_value')
       ->condition('uid', $user_to_keep->uid)
       ->condition('VALUE', '')
       ->execute();
 
-      // Change uid.
-      db_update('profile_values')
+    // Change uid.
+    db_update('profile_value')
       ->fields(array(
-        'uid' => $user_to_keep->uid,
-      ))
+      'uid' => $user_to_keep->uid,
+    ))
       ->condition('uid', $user_to_delete->uid)
       ->execute();
-    }
+  }
 }

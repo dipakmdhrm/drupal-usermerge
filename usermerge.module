@@ -1,0 +1,347 @@
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', TRUE);
+ini_set('display_startup_errors', TRUE);
+/**
+ * @file
+ * Main file for the User merge module.
+ *
+ */
+
+// Load includes
+usermerge_load_includes();
+
+/**
+ * Implements hook_permission().
+ */
+function usermerge_permission() {
+  return array(
+    'merge accounts' => array(
+      'title' => t('merge accounts'),
+      'description' => t('Merge accounts'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function usermerge_menu() {
+  $items['admin/people/merge'] = array(
+    'title' => 'Merge accounts',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('usermerge_merge_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('merge accounts'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Form to collect the two uids.
+ *
+ */
+function usermerge_merge_form($form, &$form_state) {
+  if ( !empty($form_state['page_num']) && $form_state['page_num'] == 2 ) :
+    return usermerge_data_review_form($form, $form_state);
+  else :
+    // This is necessary, otherwise the title will show up as "People"
+    drupal_set_title(t('Merge accounts'));
+
+    $form['supported_actions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Supported actions'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+
+    $form['supported_actions']['list'] = array(
+      '#theme' => 'item_list',
+      '#type' => 'ul',
+    );
+
+    $form['supported_actions']['list']['#items'] = module_invoke_all('usermerge_actions_supported', array());
+
+    $form['general']['usermerge_user_delete'] = array(
+      '#type' => 'textfield',
+      '#title' => t('The name of the account to remove'),
+      '#description' => t('All content associated with this user will be changed so it is associated with the other user.'),
+      '#autocomplete_path' => 'user/autocomplete',
+      '#required' => TRUE,
+    );
+
+    $form['general']['usermerge_user_keep'] = array(
+      '#type' => 'textfield',
+      '#title' => t('The name of the account to keep'),
+      '#description' => t('The account to use in the future.'),
+      '#autocomplete_path' => 'user/autocomplete',
+      '#required' => TRUE,
+    );
+
+    $form['general']['usermerge_user_delete_action'] = array(
+      '#type' => 'select',
+      '#title' => t('Action to perform on old account'),
+      '#options' => array(
+        'block' => t('Block'),
+        'delete' => t('Delete')
+      ),
+      '#default_value' => 'block',
+    );
+
+    $form['general']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Review account data'),
+      '#submit' => array('usermerge_merge_form_submit')
+    );
+
+    // hook_form_alter wouldn't work in this module's include files
+    drupal_alter('usermerge_merge_form', $form, $user_to_delete, $user_to_keep);
+
+    return $form;
+  endif;
+}
+
+/**
+ * Allows the selection of data to be merged
+ */
+function usermerge_data_review_form($form, &$form_state) {
+  drupal_set_title(t('Merge accounts: review account data'));
+
+  $user_to_delete = $form_state['values']['user_to_delete'];
+  $user_to_keep = $form_state['values']['user_to_keep'];
+
+  // Invoke hook_usermerge_account_properties
+  $account_properties = module_invoke_all('usermerge_account_properties', $user_to_delete, $user_to_keep);
+  // Allow modules to alter pre-existing account properties
+  drupal_alter('usermerge_account_properties', $account_properties, $user_to_delete, $user_to_keep);
+
+  $form['review'] = module_invoke_all('usermerge_build_review_form_elements', array(), $account_properties, $user_to_delete, $user_to_keep);
+
+/*
+  foreach ( $review as $group => $items ) :
+    $form[$group] = $items;
+  endforeach;
+*/
+
+  $form['review']['#type'] = 'container';
+  $form['review']['#tree'] = TRUE;
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Merge accounts')
+  );
+
+  $form['cancel'] = array(
+    '#type' => 'markup',
+    '#markup' => l(t('Cancel'), 'admin/people/merge')
+  );
+
+  drupal_alter('usermerge_data_review_form', $form, $user_to_delete, $user_to_keep);
+
+  return $form;
+}
+
+function usermerge_theme() {
+  $theme['usermerge_data_review_form_table'] = array(
+    'render element' => 'element'
+  );
+
+  return $theme;
+}
+
+function theme_usermerge_data_review_form_table($variables) {
+  $element = $variables['element'];
+
+  $table = array(
+    'header' => array(
+      'property_name' => isset($element['#attributes']['property_label']) ? $element['#attributes']['property_label'] : t('Property'),
+      'user_to_delete' => t('User to delete'),
+      'user_to_keep' => t('User to keep'),
+    )
+  );
+
+  if ( !in_array('no_merge', $element['#attributes']) ) :
+    $table['header']['merge'] = t('Merge');
+  endif;
+
+  foreach ( element_children($element) as $id ) :
+    $table['rows'][$id]['property_name'] = '<strong>' . drupal_render($element[$id]['property_name']) . '</strong>';
+    $table['rows'][$id]['user_to_delete'] = drupal_render($element[$id]['options']['user_to_delete']);
+    $table['rows'][$id]['user_to_keep'] = drupal_render($element[$id]['options']['user_to_keep']);
+
+    if ( isset($table['header']['merge']) ) :
+      if ( isset($element[$id]['options']['merge']) ) :
+        // Case 'force_select' or 'no_merge'
+        $table['rows'][$id]['merge'] = '';
+
+        // Case 'merge'
+        if ( $element[$id]['options']['#options']['merge'] == 'merge' ) :
+          $element[$id]['options']['merge']['#title'] = t('Merge data');
+          $table['rows'][$id]['merge'] = drupal_render($element[$id]['options']['merge']);
+
+        endif;
+      endif;
+    endif;
+  endforeach;
+
+  if ( isset($element['#description']) ) :
+    $description = "<p>" . $element['#description'] . "</p>\n";
+  else :
+    $description = '';
+  endif;
+
+  return '<h3>' . $element['#title'] . "</h3>\n" . $description . theme('table', $table);
+}
+
+/**
+ * Validates contents of form for user validation
+ */
+function usermerge_merge_form_validate($form, &$form_state) {
+  // Validate first step
+  if ( !isset($form_state['page_num']) ) :
+    // Can't be the same user.
+    if ($form_state['values']['usermerge_user_keep'] == $form_state['values']['usermerge_user_delete']) {
+      form_set_error('usermerge_user', 'You cannot have the same username in both fields.');
+    }
+
+    // Load up the users. We store these in the form_state['values'] so that we don't have to load again later.
+    $form_state['values']['user_to_delete'] = array_shift(user_load_multiple(array(), array('name' => $form_state['values']['usermerge_user_delete'])));
+    $form_state['values']['user_to_keep'] = array_shift(user_load_multiple(array(), array('name' => $form_state['values']['usermerge_user_keep'])));
+
+    // Use the validate helper function.
+    usermerge_validate_merge($form_state['values']['user_to_delete'], $form_state['values']['user_to_keep']);
+  endif;
+}
+
+/**
+ * Helper validation function used by the form submit and the API.
+ *
+ * @param $user_to_delete
+ *  Object of user to be deleted
+ * @param $user_to_keep
+ *  Object of user to be keep
+ */
+function usermerge_validate_merge($user_to_delete, $user_to_keep) {
+  $valid = TRUE;
+  if (empty($user_to_delete->uid)) {
+    form_set_error('usermerge_user_delete', 'This user name does not exist.');
+    $valid = FALSE;
+  }
+  if (empty($user_to_keep->uid)) {
+    form_set_error('usermerge_user_keep', 'This user name does not exist.');
+    $valid = FALSE;
+  }
+
+  // Don't remove UID 1.
+  if ($user_to_delete->uid == 1) {
+    form_set_error('usermerge_user_delete', 'Woah buddy, blocking user 1 is not a good idea.');
+    $valid = FALSE;
+  }
+  return $valid;
+}
+
+
+/**
+ * Merges two users after submitting merge form
+ */
+function usermerge_merge_form_submit($form, &$form_state) {
+  if ( !isset($form_state['page_num']) ) :
+    $form_state['page_values'][1] = $form_state['values'];
+
+    if ( !empty($form_state['page_values'][2]) ) :
+      $form_state['values'] = $form_state['page_values'][2];
+    endif;
+
+    $form_state['page_num'] = 2;
+    $form_state['rebuild'] = TRUE;
+  else :
+    $form_state['values']['usermerge_user_delete_action'] = $form_state['page_values'][1]['usermerge_user_delete_action'];
+    usermerge_merge_accounts($form_state['page_values'][1]['user_to_delete'], $form_state['page_values'][1]['user_to_keep'], $form_state['values']);
+  endif;
+}
+
+/**
+ * The function to do the work.  Custom developers: use this as your API entry point.
+ *
+ * @param object $user_to_delete
+ *   A fully loaded user object from user_load() that will be merged and blocked.
+ * @param object $user_to_keep
+ *   A fully loaded user object from user_load() that will be merged and retained.
+ * @return boolean
+ *   TRUE if they are merged, FALSE if the validation failed.
+ */
+function usermerge_merge_accounts($user_to_delete, $user_to_keep, $form_values) {
+  if (usermerge_validate_merge($user_to_delete, $user_to_keep)) {
+    $merged_account = module_invoke_all('usermerge_merge_accounts', $user_to_delete, $user_to_keep, $form_values['review']);
+
+    // This allows modules to modify the array without merging values
+    drupal_alter('usermerge_merge_accounts_alter', $merged_account, $user_to_delete, $user_to_keep);
+
+    $merged_account = (object) $merged_account;
+
+    // Save $merged_account
+    $merged_account->pass = $user_to_keep->pass;
+    $merged_account->status = 1;
+
+    // Block or delete old account
+    switch ( $form_values['usermerge_user_delete_action'] ) :
+      case 'block' :
+        user_block_user_action($user_to_delete);
+      break;
+
+      case 'delete' :
+        user_delete($user_to_delete->uid);
+      break;
+    endswitch;
+
+    // Save merged account
+    user_save($merged_account);
+
+    drupal_set_message(t('We successfully merged %user_to_delete into %user_to_keep', array('%user_to_delete' => $user_to_delete->name, '%user_to_keep' => $user_to_keep->name)));
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+// Register hooks
+function usermerge_hook_info() {
+  $hooks = array(
+    'usermerge_actions_supported' => array(
+      'group' => 'usermerge'
+    ),
+    'usermerge_account_properties' => array(
+      'group' => 'usermerge'
+    ),
+    'usermerge_account_properties_alter' => array(
+      'group' => 'usermerge'
+    ),
+    'usermerge_merge_form_alter' => array(
+      'group' => 'usermerge'
+    ),
+    'usermerge_data_review_form' => array(
+      'group' => 'usermerge'
+    ),
+    'usermerge_build_review_form_elements' => array(
+      'group' => 'usermerge'
+    ),
+    'usermerge_merge_accounts' => array(
+      'group' => 'usermerge'
+    ),
+    'usermerge_merge_accounts_alter' => array(
+      'group' => 'usermerge'
+    )
+  );
+
+  return $hooks;
+}
+
+// Calls supplemental includes
+function usermerge_load_includes() {
+  foreach ( module_list() as $module ) :
+    module_load_include('inc', 'usermerge', 'includes/' . $module . '.usermerge');
+  endforeach;
+}

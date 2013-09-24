@@ -135,13 +135,16 @@ function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) 
  */
 function usermerge_usermerge_build_review_form_elements($review, $account_properties, $user_to_delete, $user_to_keep) {
   // Build form elements
+  // Set very low weight to keep properties controlled by this file at the top of the table
+  $i = -10000;
   foreach ( $account_properties as $property_type => $properties ) :
     // User properties
     if ( in_array($property_type, array('core', 'fields', 'other')) ) :
       $review[$property_type] = array(
         '#tree' => TRUE,
         '#theme' => 'usermerge_data_review_form_table',
-        '#title' => $properties['title']
+        '#title' => $properties['title'],
+        '#weight' => $i
       );
 
       if ( isset($properties['description']) ) :
@@ -232,7 +235,8 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
           '#tree' => TRUE,
           '#theme' => 'usermerge_data_review_form_table',
           '#title' => $properties['title'],
-          '#attributes' => array('no_merge', 'property_label' => t('Entity'))
+          '#attributes' => array('no_merge', 'property_label' => t('Entity')),
+          '#weight' => $i
         );
 
         foreach ( $content_user_to_delete as $entity_type => $entities) :
@@ -261,6 +265,9 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
         ksort($review[$property_type]);
       endif;
     endif;
+    
+    // Increments weight
+    $i++;
   endforeach;
 
   if ( isset($account) ) :

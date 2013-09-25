@@ -72,7 +72,7 @@ function entityreference_usermerge_build_review_form_elements($review, $account_
       );
     endforeach;
 
-    foreach ( $entityreferences_user_to_keep as $entity_type => $entities ) :
+    foreach ( $entityreferences_user_to_keep as $entity_type => $entity_list ) :
       $review['entityreference'][$entity_type]['property_name'] = array(
           '#type' => 'markup',
           '#markup' => $entity_type
@@ -80,7 +80,7 @@ function entityreference_usermerge_build_review_form_elements($review, $account_
 
       $review['entityreference'][$entity_type]['options']['user_to_keep'] = array(
         '#type' => 'markup',
-        '#markup' => format_plural(count($entities), '1 %entity entity to be maintained', '@count %entity entities to be maintained', array('%entity' => $entity_type))
+        '#markup' => format_plural(count($entity_list), '1 %entity entity to be maintained', '@count %entity entities to be maintained', array('%entity' => $entity_type))
       );
     endforeach;
 
@@ -104,30 +104,33 @@ function entityreference_usermerge_actions_supported($items) {
  * Implements hook_usermerge_merge_accounts().
  */
 function entityreference_usermerge_merge_accounts($user_to_delete, $user_to_keep, $review) {
-  $fields = array();
+  if ( isset($review['entityreference']) ) :
+    $fields = array();
 
-  foreach ( $review['entityreference'] as $entity_type => $entity_properties ) :
-    $fields = array_merge($fields, unserialize($entity_properties['fields']));
-  endforeach;
-
-  foreach ( $fields as $field_name => $field_properties ) :
-    $tables = array(
-      'data' => 'field_data_' . $field_name,
-      'revision' => 'field_revision_' . $field_name,
-    );
-
-    foreach ( $tables as $table_name ) :
-      $query = db_update($table_name)
-        ->fields(array(
-            $field_name . '_target_id' => $user_to_keep->uid
-          )
-        )
-        ->condition($field_name . '_target_id', $user_to_delete->uid)
-        ->execute();
+    foreach ( $review['entityreference'] as $entity_type => $entity_properties ) :
+      $fields = array_merge($fields, unserialize($entity_properties['fields']));
     endforeach;
-  endforeach;
-}
 
+    if ( count($fields) ) :
+      foreach ( $fields as $field_name => $field_properties ) :
+        $tables = array(
+          'data' => 'field_data_' . $field_name,
+          'revision' => 'field_revision_' . $field_name,
+        );
+
+        foreach ( $tables as $table_name ) :
+          $query = db_update($table_name)
+            ->fields(array(
+                $field_name . '_target_id' => $user_to_keep->uid
+              )
+            )
+            ->condition($field_name . '_target_id', $user_to_delete->uid)
+            ->execute();
+        endforeach;
+      endforeach;
+    endif;
+  endif;
+}
 
 function _entityreference_usermerge_get_referencing_entity_types() {
   $fields = field_info_instances();

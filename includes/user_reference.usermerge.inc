@@ -15,8 +15,8 @@ function user_reference_usermerge_build_review_form_elements($review, $account_p
   $user_references_user_to_delete = array();
   $user_references_user_to_keep = array();
 
-  foreach ( $entities as $entity_type => $fields ) :
-    foreach ( $fields as $field ) :
+  foreach ( $entities as $entity_type => $fields ) {
+    foreach ( $fields as $field ) {
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', $entity_type)
         ->propertyCondition('type', $field['bundle'])
@@ -24,13 +24,14 @@ function user_reference_usermerge_build_review_form_elements($review, $account_p
 
       $result = $query->execute();
 
-      if ( count($result) ) :
-        if ( isset($user_references_user_to_delete[$entity_type]) ) :
+      if ( count($result) ) {
+        if ( isset($user_references_user_to_delete[$entity_type]) ) {
           $user_references_user_to_delete[$entity_type] = $user_references_user_to_delete[$entity_type] + $result[$entity_type];
-        else :
+        }
+        else {
           $user_references_user_to_delete[$entity_type] = $result[$entity_type];
-        endif;
-      endif;
+        }
+      }
 
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', $entity_type)
@@ -39,17 +40,18 @@ function user_reference_usermerge_build_review_form_elements($review, $account_p
 
       $result = $query->execute();
 
-      if ( count($result) ) :
-        if ( isset($user_references_user_to_keep[$entity_type]) ) :
+      if ( count($result) ) {
+        if ( isset($user_references_user_to_keep[$entity_type]) ) {
           $user_references_user_to_keep[$entity_type] = $user_references_user_to_keep[$entity_type] + $result[$entity_type];
-        else :
+        }
+        else {
           $user_references_user_to_keep[$entity_type] = $result[$entity_type];
-        endif;
-      endif;
-    endforeach;
-  endforeach;
+        }
+      }
+    }
+  }
 
-  if ( count($user_references_user_to_delete) || count($user_references_user_to_keep) ) :
+  if ( count($user_references_user_to_delete) || count($user_references_user_to_keep) ) {
     $review['user_reference'] = array(
       '#tree' => TRUE,
       '#theme' => 'usermerge_data_review_form_table',
@@ -57,7 +59,7 @@ function user_reference_usermerge_build_review_form_elements($review, $account_p
       '#attributes' => array('no_merge', 'property_label' => t('Entity'))
     );
 
-    foreach ( $user_references_user_to_delete as $entity_type => $entity_list ) :
+    foreach ( $user_references_user_to_delete as $entity_type => $entity_list ) {
       $review['user_reference'][$entity_type]['property_name'] = array(
           '#type' => 'markup',
           '#markup' => $entity_type
@@ -72,9 +74,9 @@ function user_reference_usermerge_build_review_form_elements($review, $account_p
         '#type' => 'hidden',
         '#value' => serialize($entities[$entity_type])
       );
-    endforeach;
+    }
 
-    foreach ( $user_references_user_to_keep as $entity_type => $entity_list ) :
+    foreach ( $user_references_user_to_keep as $entity_type => $entity_list ) {
       $review['user_reference'][$entity_type]['property_name'] = array(
           '#type' => 'markup',
           '#markup' => $entity_type
@@ -84,12 +86,12 @@ function user_reference_usermerge_build_review_form_elements($review, $account_p
         '#type' => 'markup',
         '#markup' => format_plural(count($entity_list), '1 %entity entity to be maintained', '@count %entity entities to be maintained', array('%entity' => $entity_type))
       );
-    endforeach;
+    }
 
     ksort($review['user_reference']);
 
     return $review;
-  endif;
+  }
 }
 
 /**
@@ -105,21 +107,21 @@ function user_reference_usermerge_actions_supported($items) {
  * Implements hook_usermerge_merge_accounts().
  */
 function user_reference_usermerge_merge_accounts($user_to_delete, $user_to_keep, $review) {
-  if ( isset($review['user_reference']) ) :
+  if ( isset($review['user_reference']) ) {
     $fields = array();
 
-    foreach ( $review['user_reference'] as $entity_type => $entity_properties ) :
+    foreach ( $review['user_reference'] as $entity_type => $entity_properties ) {
       $fields = array_merge($fields, unserialize($entity_properties['fields']));
-    endforeach;
+    }
 
-    if ( count($fields) ) :
-      foreach ( $fields as $field_name => $field_properties ) :
+    if ( count($fields) ) {
+      foreach ( $fields as $field_name => $field_properties ) {
         $tables = array(
           'data' => 'field_data_' . $field_name,
           'revision' => 'field_revision_' . $field_name,
         );
 
-        foreach ( $tables as $table_name ) :
+        foreach ( $tables as $table_name ) {
           $query = db_update($table_name)
             ->fields(array(
                 $field_name . '_uid' => $user_to_keep->uid
@@ -127,10 +129,10 @@ function user_reference_usermerge_merge_accounts($user_to_delete, $user_to_keep,
             )
             ->condition($field_name . '_uid', $user_to_delete->uid)
             ->execute();
-        endforeach;
-      endforeach;
-    endif;
-  endif;
+        }
+      }
+    }
+  }
 }
 
 function _user_reference_usermerge_get_referencing_entity_types() {
@@ -138,7 +140,7 @@ function _user_reference_usermerge_get_referencing_entity_types() {
 
   $referencing_entity_types = array();
 
-  foreach ( $fields as $entity_type => $entity ) :
+  foreach ( $fields as $entity_type => $entity ) {
     foreach ( $entity as $bundle => $fieldlist ) {
       foreach ( $fieldlist as $field => $properties ) {
         if ( $properties['widget']['module'] == 'user_reference' ) {
@@ -146,7 +148,7 @@ function _user_reference_usermerge_get_referencing_entity_types() {
         }
       }
     }
-  endforeach;
+  }
 
   if ( count($referencing_entity_types) ) {
     return $referencing_entity_types;

@@ -39,33 +39,33 @@ function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) 
   // Find custom fields
   $user_entity_properties['fields'] = preg_grep("/^field_/", $user_all_properties);
 
-  if ( count($user_entity_properties['fields']) ) :
+  if ( count($user_entity_properties['fields']) ) {
     $account_properties['fields'] = array(
       'title' => t('Fields'),
       'description' => t('Please note that single-value fields cannot be merged.'),
       'items' => array()
     );
-  endif;
+  }
 
   // Find other user properties
   $user_noncore_properties = array_diff($user_all_properties, $user_entity_properties['core']);
   $user_entity_properties['other'] = array_diff($user_noncore_properties, $user_entity_properties['fields']);
 
-  if ( count($user_entity_properties['other']) ) :
+  if ( count($user_entity_properties['other']) ) {
     $account_properties['other'] = array(
       'title' => t('Other properties'),
       'items' => array()
     );
-  endif;
+  }
 
-  foreach ( $user_entity_properties as $type => $properties ) :
-    foreach ( array_flip($properties) as $property_name => $delta ) :
+  foreach ( $user_entity_properties as $type => $properties ) {
+    foreach ( array_flip($properties) as $property_name => $delta ) {
       $account_properties[$type]['items'][$property_name] = array(
         'name' => $property_name,
         'criterion' => 'merge'
       );
-    endforeach;
-  endforeach;
+    }
+  }
 
   // These could be defined via settings page
   // Remove unwanted items
@@ -78,18 +78,20 @@ function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) 
   $account_properties['core']['items']['signature_format']['default'] = $user_to_keep->signature_format;
 
   // Choose older created date
-  if ( $user_to_delete->created < $user_to_keep->created ) :
+  if ( $user_to_delete->created < $user_to_keep->created ) {
     $account_properties['core']['items']['created']['default'] = $user_to_delete->created;
-  else :
+  }
+  else {
     $account_properties['core']['items']['created']['default'] = $user_to_keep->created;
-  endif;
+  }
 
   // Choose newer access date
-  if ( $user_to_delete->access > $user_to_keep->access ) :
+  if ( $user_to_delete->access > $user_to_keep->access ) {
     $account_properties['core']['items']['access']['default'] = $user_to_delete->access;
-  else :
+  }
+  else {
     $account_properties['core']['items']['access']['default'] = $user_to_keep->access;
-  endif;
+  }
 
   $account_properties['core']['items']['login']['default'] = $user_to_keep->login;
   $account_properties['core']['items']['status']['default'] = $user_to_keep->status;
@@ -108,24 +110,24 @@ function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) 
   $account_properties['core']['items']['mail']['criterion'] = 'no_merge';
 
   // Special settings for fields
-  foreach ( $account_properties['fields']['items'] as $field_name => $properties ) :
+  foreach ( $account_properties['fields']['items'] as $field_name => $properties ) {
     $field_settings = field_info_field($field_name);
     // If the field's cardinality is not 1, do not allow merging
     // This could pose problems for fields whose cardinality is greater than one, but not unlimited
-    if ( $field_settings['cardinality'] <> FIELD_CARDINALITY_UNLIMITED ) :
+    if ( $field_settings['cardinality'] <> FIELD_CARDINALITY_UNLIMITED ) {
       $account_properties['fields']['items'][$field_name]['criterion'] = 'force_select';
-    endif;
-  endforeach;
+    }
+  }
 
   // Authored entitites
   $account_properties['entities']['title'] = t('Authored entities');
 
-  foreach ( usermerge_get_authorable_entities() as $entity_name => $entity ) :
+  foreach ( usermerge_get_authorable_entities() as $entity_name => $entity ) {
     $account_properties['entities']['items'][$entity_name] = array(
       'name' => $entity_name,
       'criterion' => 'no_merge'
     );
-  endforeach;
+  }
 
   return $account_properties;
 }
@@ -137,9 +139,9 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
   // Build form elements
   // Set very low weight to keep properties controlled by this file at the top of the table
   $i = -10000;
-  foreach ( $account_properties as $property_type => $properties ) :
+  foreach ( $account_properties as $property_type => $properties ) {
     // User properties
-    if ( in_array($property_type, array('core', 'fields', 'other')) ) :
+    if ( in_array($property_type, array('core', 'fields', 'other')) ) {
       $review[$property_type] = array(
         '#tree' => TRUE,
         '#theme' => 'usermerge_data_review_form_table',
@@ -147,19 +149,19 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
         '#weight' => $i
       );
 
-      if ( isset($properties['description']) ) :
+      if ( isset($properties['description']) ) {
         $review[$property_type]['#description'] = $properties['description'];
-      endif;
+      }
 
-      if ( $property_type == 'fields' ) :
+      if ( $property_type == 'fields' ) {
         $review[$property_type]['#attributes']['property_label'] = t('Field');
-      endif;
+      }
 
-      foreach ( $properties['items'] as $property ) :
+      foreach ( $properties['items'] as $property ) {
         $property_name = $property['name'];
 
         // Properties with default behaviors will not be displayed
-        if ( !array_key_exists('default', $property) ) :
+        if ( !array_key_exists('default', $property) ) {
           $review[$property_type][$property_name]['property_name'] = array(
             '#type' => 'markup',
             '#markup' => $property_name
@@ -170,23 +172,23 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
           $field_user_to_keep = $user_to_keep->{$property_name};
 
           // Roles must be dealt with separately
-          if ( $property_name == 'roles' ) :
+          if ( $property_name == 'roles' ) {
             $field_user_to_delete = implode(', ', $user_to_delete->{$property_name});
             $field_user_to_keep = implode(', ', $user_to_keep->{$property_name});
-          endif;
+          }
 
           // Process custom fields for display
-          if ( $property_type == 'fields' ) :
-            if ( is_array($field_user_to_delete) ) :
+          if ( $property_type == 'fields' ) {
+            if ( is_array($field_user_to_delete) ) {
               $field_user_to_delete = field_view_field('user', $user_to_delete, $property_name, array('label' => 'hidden', 'settings' => array()));
               $field_user_to_delete = strip_tags(drupal_render($field_user_to_delete), '<em> <strong> <ul> <li>');
-            endif;
+            }
 
-            if ( is_array($field_user_to_keep) ) :
+            if ( is_array($field_user_to_keep) ) {
               $field_user_to_keep = field_view_field('user', $user_to_keep, $property_name, array('label' => 'hidden', 'settings' => array()));
               $field_user_to_keep = strip_tags(drupal_render($field_user_to_keep), '<em> <strong> <ul> <li>');
-            endif;
-          endif;
+            }
+          }
 
           $review[$property_type][$property_name]['options'] = array(
             '#type' => 'radios',
@@ -196,13 +198,14 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
             ),
           );
 
-          if ( isset($property['default_option']) ) :
+          if ( isset($property['default_option']) ) {
             $review[$property_type][$property_name]['options']['#default_value'] = $property['default_option'];
-          else :
+          }
+          else {
             $review[$property_type][$property_name]['options']['#default_value'] = 'user_to_keep';
-          endif;
+          }
 
-          switch ( $property['criterion'] ) :
+          switch ( $property['criterion'] ) {
             case 'merge' :
               $review[$property_type][$property_name]['options']['#options']['merge'] = 'merge';
               break;
@@ -215,22 +218,23 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
               $review[$property_type][$property_name]['options']['#options']['merge'] = 'no_merge';
               $review[$property_type][$property_name]['options']['#disabled'] = TRUE;
             break;
-          endswitch;
+          }
 
-          if ( isset($property['default_option']) ) :
+          if ( isset($property['default_option']) ) {
             $review[$property_type][$property_name]['options']['#default_value'] = $property['default_option'];
-          endif;
-        else :
+          }
+        }
+        else {
           $account[$property_name] = $property['default'];
-        endif;
-      endforeach;
-
+        }
+      }
+    }
     // Entities
-    elseif ( $property_type == 'entities' ) :
+    elseif ( $property_type == 'entities' ) {
       $content_user_to_delete = usermerge_query_authored_entities($properties['items'], $user_to_delete->uid);
       $content_user_to_keep = usermerge_query_authored_entities($properties['items'], $user_to_keep->uid);
 
-      if ( count($content_user_to_delete) || count($content_user_to_keep) ) :
+      if ( count($content_user_to_delete) || count($content_user_to_keep) ) {
         $review[$property_type] = array(
           '#tree' => TRUE,
           '#theme' => 'usermerge_data_review_form_table',
@@ -239,7 +243,7 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
           '#weight' => $i
         );
 
-        foreach ( $content_user_to_delete as $entity_type => $entities) :
+        foreach ( $content_user_to_delete as $entity_type => $entities) {
           $review[$property_type][$entity_type]['property_name'] = array(
               '#type' => 'markup',
               '#markup' => $entity_type
@@ -249,9 +253,9 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
             '#type' => 'markup',
             '#markup' => format_plural(count($entities), '1 %entity entity to be reassigned', '@count %entity entities to be reassigned', array('%entity' => $entity_type))
           );
-        endforeach;
+        }
 
-        foreach ( $content_user_to_keep as $entity_type => $entities) :
+        foreach ( $content_user_to_keep as $entity_type => $entities) {
           $review[$property_type][$entity_type]['property_name'] = array(
               '#type' => 'markup',
               '#markup' => $entity_type
@@ -261,21 +265,21 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
             '#type' => 'markup',
             '#markup' => format_plural(count($entities), '1 %entity entity to be maintained', '@count %entity entities to be maintained', array('%entity' => $entity_type))
           );
-        endforeach;
+        }
         ksort($review[$property_type]);
-      endif;
-    endif;
+      }
+    }
 
     // Increments weight
     $i++;
-  endforeach;
+  }
 
-  if ( isset($account) ) :
+  if ( isset($account) ) {
     $review['account'] = array(
       '#type' => 'hidden',
       '#value' => serialize($account)
     );
-  endif;
+  }
 
   return $review;
 }
@@ -283,11 +287,11 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
 function usermerge_get_authorable_entities() {
   $entities = entity_get_info();
 
-  foreach ( $entities as $entity_type => $entity ) :
-    if ( !in_array('uid', $entity['schema_fields_sql']['base table']) ) :
+  foreach ( $entities as $entity_type => $entity ) {
+    if ( !in_array('uid', $entity['schema_fields_sql']['base table']) ) {
       unset($entities[$entity_type]);
-    endif;
-  endforeach;
+    }
+  }
 
   // Exclude user entity
   unset($entities['user']);
@@ -298,16 +302,16 @@ function usermerge_get_authorable_entities() {
 function usermerge_query_authored_entities($entities, $user_id) {
   $found_entities = array();
 
-  foreach ( $entities as $entity_type => $entity ) :
+  foreach ( $entities as $entity_type => $entity ) {
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', $entity_type)
       ->propertyCondition('uid', $user_id);
     $result = $query->execute();
 
-    if ( count($result) ) :
+    if ( count($result) ) {
       $found_entities[$entity_type] = $result[$entity_type];
-    endif;
-  endforeach;
+    }
+  }
 
   return $found_entities;
 }
@@ -320,35 +324,36 @@ function usermerge_usermerge_merge_accounts($user_to_delete, $user_to_keep, $rev
   unset($review['account']);
 
   // Process core, fields, other properties
-  foreach ( $review as $property_type => $properties ) :
-    if ( in_array($property_type, array('core', 'fields', 'other')) ) :
-      foreach ( $properties as $property_name => $options ) :
-        if ( $options['options'] != NULL ) :
-          if ( $options['options'] != 'merge' ) :
+  foreach ( $review as $property_type => $properties ) {
+    if ( in_array($property_type, array('core', 'fields', 'other')) ) {
+      foreach ( $properties as $property_name => $options ) {
+        if ( $options['options'] != NULL ) {
+          if ( $options['options'] != 'merge' ) {
             $chosen_account = $options['options'];
             $merged_account[$property_name] = $$chosen_account->{$property_name};
-          else :
-            switch ( $property_type ) :
+          }
+          else {
+            switch ( $property_type ) {
               case 'core' :
                 // Other modules can enforce merging of properties this module won't merge, so we won't object to that here
                 // This module deals natively only with roles
                 if ( $property_name == 'roles' ) :
                   $merged_account[$property_name] = $user_to_delete->{$property_name} + $user_to_keep->{$property_name};
                   ksort($merged_account[$property_name]);
-                endif;
+                }
               break;
 
               case 'fields' :
-                foreach ( $user_to_delete->{$property_name} as $language => $items ) :
+                foreach ( $user_to_delete->{$property_name} as $language => $items ) {
                   $merged_account[$property_name][$language] = array_merge($user_to_delete->{$property_name}[$language], $user_to_keep->{$property_name}[$language]);
-                endforeach;
+                }
               break;
-            endswitch;
-          endif;
-        endif;
-      endforeach;
-    endif;
-  endforeach;
+            }
+          }
+        }
+      }
+    }
+  }
 
   // Operate on entities
   // Rebuild the list of entities here instead of passing as form values
@@ -357,7 +362,7 @@ function usermerge_usermerge_merge_accounts($user_to_delete, $user_to_keep, $rev
   $entities_user_to_delete = usermerge_query_authored_entities($authorable_entities, $user_to_delete->uid);
   // No need to find entities for $user_to_keep
 
-  foreach ( $entities_user_to_delete as $entity_type => $entities ) :
+  foreach ( $entities_user_to_delete as $entity_type => $entities ) {
     // We take for granted that the base table has a uid column, because of usermerge_get_authorable_entities()
     // We also don't need to select specific entities, because we're replacing all the entities belonging to $user_to_delete
     db_update($authorable_entities[$entity_type]['base table'])
@@ -368,7 +373,7 @@ function usermerge_usermerge_merge_accounts($user_to_delete, $user_to_keep, $rev
       ->execute();
 
     // Check if the entity has a revision table
-    if ( isset($authorable_entities[$entity_type]['revision table']) ) :
+    if ( isset($authorable_entities[$entity_type]['revision table']) ) {
       // Find the correct column name
       // Not all revision tables have the uid stored in uid (like node_revision)
       // Some store it in revision_uid
@@ -380,8 +385,8 @@ function usermerge_usermerge_merge_accounts($user_to_delete, $user_to_keep, $rev
                 ))
         ->condition($uid_column, $user_to_delete->uid)
         ->execute();
-    endif;
-  endforeach;
+    }
+  }
 
   return $merged_account;
 }

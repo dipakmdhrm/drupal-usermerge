@@ -265,7 +265,7 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
         ksort($review[$property_type]);
       endif;
     endif;
-    
+
     // Increments weight
     $i++;
   endforeach;
@@ -323,26 +323,28 @@ function usermerge_usermerge_merge_accounts($user_to_delete, $user_to_keep, $rev
   foreach ( $review as $property_type => $properties ) :
     if ( in_array($property_type, array('core', 'fields', 'other')) ) :
       foreach ( $properties as $property_name => $options ) :
-        if ( $options['options'] != 'merge' ) :
-          $chosen_account = $options['options'];
-          $merged_account[$property_name] = $$chosen_account->{$property_name};
-        else :
-          switch ( $property_type ) :
-            case 'core' :
-              // Other modules can enforce merging of properties this module won't merge, so we won't object to that here
-              // This module deals natively only with roles
-              if ( $property_name == 'roles' ) :
-                $merged_account[$property_name] = $user_to_delete->{$property_name} + $user_to_keep->{$property_name};
-                ksort($merged_account[$property_name]);
-              endif;
-            break;
+        if ( $options['options'] != NULL ) :
+          if ( $options['options'] != 'merge' ) :
+            $chosen_account = $options['options'];
+            $merged_account[$property_name] = $$chosen_account->{$property_name};
+          else :
+            switch ( $property_type ) :
+              case 'core' :
+                // Other modules can enforce merging of properties this module won't merge, so we won't object to that here
+                // This module deals natively only with roles
+                if ( $property_name == 'roles' ) :
+                  $merged_account[$property_name] = $user_to_delete->{$property_name} + $user_to_keep->{$property_name};
+                  ksort($merged_account[$property_name]);
+                endif;
+              break;
 
-            case 'fields' :
-              foreach ( $user_to_delete->{$property_name} as $language => $items ) :
-                $merged_account[$property_name][$language] = array_merge($user_to_delete->{$property_name}[$language], $user_to_keep->{$property_name}[$language]);
-              endforeach;
-            break;
-          endswitch;
+              case 'fields' :
+                foreach ( $user_to_delete->{$property_name} as $language => $items ) :
+                  $merged_account[$property_name][$language] = array_merge($user_to_delete->{$property_name}[$language], $user_to_keep->{$property_name}[$language]);
+                endforeach;
+              break;
+            endswitch;
+          endif;
         endif;
       endforeach;
     endif;

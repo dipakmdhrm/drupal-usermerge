@@ -337,7 +337,7 @@ function usermerge_usermerge_merge_accounts($user_to_delete, $user_to_keep, $rev
               case 'core' :
                 // Other modules can enforce merging of properties this module won't merge, so we won't object to that here
                 // This module deals natively only with roles
-                if ( $property_name == 'roles' ) :
+                if ( $property_name == 'roles' ) {
                   $merged_account[$property_name] = $user_to_delete->{$property_name} + $user_to_keep->{$property_name};
                   ksort($merged_account[$property_name]);
                 }

@@ -19,7 +19,6 @@ function user_reference_usermerge_build_review_form_elements($review, $account_p
     foreach ( $fields as $field ) {
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', $entity_type)
-        ->propertyCondition('type', $field['bundle'])
         ->fieldCondition($field['field_name'], 'uid', $user_to_delete->uid);
 
       $result = $query->execute();
@@ -35,7 +34,6 @@ function user_reference_usermerge_build_review_form_elements($review, $account_p
 
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', $entity_type)
-        ->propertyCondition('type', $field['bundle'])
         ->fieldCondition($field['field_name'], 'uid', $user_to_keep->uid);
 
       $result = $query->execute();

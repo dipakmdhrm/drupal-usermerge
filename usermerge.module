@@ -41,7 +41,7 @@ function usermerge_merge_form($form, &$form_state) {
   // Load includes
   usermerge_load_includes();
 
-  if ( !empty($form_state['page_num']) && $form_state['page_num'] == 2 ) {
+  if ( !empty($form_state['form_page']) && $form_state['form_page'] == 'review_table' ) {
     return usermerge_data_review_form($form, $form_state);
   }
   else {
@@ -193,7 +193,7 @@ function theme_usermerge_data_review_form_table($variables) {
  */
 function usermerge_merge_form_validate($form, &$form_state) {
   // Validate first step
-  if ( !isset($form_state['page_num']) ) {
+  if ( !isset($form_state['form_page']) ) {
     // Can't be the same user.
     if ($form_state['values']['usermerge_user_keep'] == $form_state['values']['usermerge_user_delete']) {
       form_set_error('usermerge_user', 'You cannot have the same username in both fields.');
@@ -241,19 +241,19 @@ function usermerge_validate_merge($user_to_delete, $user_to_keep) {
  * Merges two users after submitting merge form
  */
 function usermerge_merge_form_submit($form, &$form_state) {
-  if ( !isset($form_state['page_num']) ) {
-    $form_state['page_values'][1] = $form_state['values'];
+  if ( !isset($form_state['form_page']) ) {
+    $form_state['page_values']['merge_form'] = $form_state['values'];
 
-    if ( !empty($form_state['page_values'][2]) ) {
-      $form_state['values'] = $form_state['page_values'][2];
+    if ( !empty($form_state['page_values']['review_table']) ) {
+      $form_state['values'] = $form_state['page_values']['review_table'];
     }
 
-    $form_state['page_num'] = 2;
+    $form_state['form_page'] = 'review_table';
     $form_state['rebuild'] = TRUE;
   }
   else {
     $form_state['values']['usermerge_user_delete_action'] = $form_state['page_values'][1]['usermerge_user_delete_action'];
-    usermerge_merge_accounts($form_state['page_values'][1]['user_to_delete'], $form_state['page_values'][1]['user_to_keep'], $form_state['values']);
+    usermerge_merge_accounts($form_state['page_values']['merge_form']['user_to_delete'], $form_state['page_values']['merge_form']['user_to_keep'], $form_state['values']);
   }
 }
 

@@ -44,61 +44,60 @@ function usermerge_merge_form($form, &$form_state) {
   if ( !empty($form_state['form_page']) && $form_state['form_page'] == 'review_table' ) {
     return usermerge_data_review_form($form, $form_state);
   }
-  else {
-    // This is necessary, otherwise the title will show up as "People"
-    drupal_set_title(t('Merge accounts'));
 
-    $form['supported_actions'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Supported actions'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-    );
+  // This is necessary, otherwise the title will show up as "People"
+  drupal_set_title(t('Merge accounts'));
 
-    $form['supported_actions']['list'] = array(
-      '#theme' => 'item_list',
-      '#type' => 'ul',
-    );
+  $form['supported_actions'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Supported actions'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
 
-    $form['supported_actions']['list']['#items'] = module_invoke_all('usermerge_actions_supported', array());
+  $form['supported_actions']['list'] = array(
+    '#theme' => 'item_list',
+    '#type' => 'ul',
+  );
 
-    $form['general']['usermerge_user_delete'] = array(
-      '#type' => 'textfield',
-      '#title' => t('The name of the account to remove'),
-      '#description' => t('All content associated with this user will be changed so it is associated with the other user.'),
-      '#autocomplete_path' => 'user/autocomplete',
-      '#required' => TRUE,
-    );
+  $form['supported_actions']['list']['#items'] = module_invoke_all('usermerge_actions_supported', array());
 
-    $form['general']['usermerge_user_keep'] = array(
-      '#type' => 'textfield',
-      '#title' => t('The name of the account to keep'),
-      '#description' => t('The account to use in the future.'),
-      '#autocomplete_path' => 'user/autocomplete',
-      '#required' => TRUE,
-    );
+  $form['general']['usermerge_user_delete'] = array(
+    '#type' => 'textfield',
+    '#title' => t('The name of the account to remove'),
+    '#description' => t('All content associated with this user will be changed so it is associated with the other user.'),
+    '#autocomplete_path' => 'user/autocomplete',
+    '#required' => TRUE,
+  );
 
-    $form['general']['usermerge_user_delete_action'] = array(
-      '#type' => 'select',
-      '#title' => t('Action to perform on old account'),
-      '#options' => array(
-        'block' => t('Block'),
-        'delete' => t('Delete')
-      ),
-      '#default_value' => 'block',
-    );
+  $form['general']['usermerge_user_keep'] = array(
+    '#type' => 'textfield',
+    '#title' => t('The name of the account to keep'),
+    '#description' => t('The account to use in the future.'),
+    '#autocomplete_path' => 'user/autocomplete',
+    '#required' => TRUE,
+  );
 
-    $form['general']['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Review account data'),
-      '#submit' => array('usermerge_merge_form_submit')
-    );
+  $form['general']['usermerge_user_delete_action'] = array(
+    '#type' => 'select',
+    '#title' => t('Action to perform on old account'),
+    '#options' => array(
+      'block' => t('Block'),
+      'delete' => t('Delete')
+    ),
+    '#default_value' => 'block',
+  );
 
-    // hook_form_alter wouldn't work in this module's include files
-    drupal_alter('usermerge_merge_form', $form, $user_to_delete, $user_to_keep);
+  $form['general']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Review account data'),
+    '#submit' => array('usermerge_merge_form_submit')
+  );
 
-    return $form;
-  }
+  // hook_form_alter wouldn't work in this module's include files
+  drupal_alter('usermerge_merge_form', $form, $user_to_delete, $user_to_keep);
+
+  return $form;
 }
 
 /**

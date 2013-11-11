@@ -7,9 +7,12 @@
  */
 
 /**
- * Implement hook_usermerge_merge_form_alter() on behalf of field_collection.
+ * Implement hook_form_FORM_ID_alter() on behalf of field_collection.
  */
-function field_collection_usermerge_data_review_form_alter(&$form, $user_to_delete, $user_to_keep) {
+function field_collection_form_usermerge_data_review_form_alter(&$form, &$form_state, $form_id) {
+  $user_to_delete = $form_state['values']['user_to_delete'];
+  $user_to_keep = $form_state['values']['user_to_keep'];
+
   // Used to remove "Add" links from the display of Field Collection data on the review table
   $fields = reset(field_info_instances('user'));
 

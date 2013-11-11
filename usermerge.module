@@ -23,8 +23,7 @@ function usermerge_permission() {
 function usermerge_menu() {
   $items['admin/people/merge'] = array(
     'title' => 'Merge accounts',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('usermerge_merge_form'),
+    'page callback' => 'usermerge_page',
     'access callback' => 'user_access',
     'access arguments' => array('merge accounts'),
     'type' => MENU_LOCAL_TASK,
@@ -33,14 +32,18 @@ function usermerge_menu() {
   return $items;
 }
 
+function usermerge_page() {
+  // Load includes before calling drupal_get_form
+  usermerge_load_includes();
+  
+  return drupal_get_form('usermerge_merge_form');
+}
+
 /**
  * Form to collect the two uids.
  *
  */
 function usermerge_merge_form($form, &$form_state) {
-  // Load includes
-  usermerge_load_includes();
-
   if ( !empty($form_state['form_page']) && $form_state['form_page'] == 'review_table' ) {
     return usermerge_data_review_form($form, $form_state);
   }
@@ -94,9 +97,6 @@ function usermerge_merge_form($form, &$form_state) {
     '#submit' => array('usermerge_merge_form_submit')
   );
 
-  // hook_form_alter wouldn't work in this module's include files
-  drupal_alter('usermerge_merge_form', $form, $user_to_delete, $user_to_keep);
-
   return $form;
 }
 
@@ -128,8 +128,6 @@ function usermerge_data_review_form($form, &$form_state) {
     '#type' => 'markup',
     '#markup' => l(t('Cancel'), 'admin/people/merge')
   );
-
-  drupal_alter('usermerge_data_review_form', $form, $user_to_delete, $user_to_keep);
 
   return $form;
 }
@@ -251,7 +249,7 @@ function usermerge_merge_form_submit($form, &$form_state) {
     $form_state['rebuild'] = TRUE;
   }
   else {
-    $form_state['values']['usermerge_user_delete_action'] = $form_state['page_values'][1]['usermerge_user_delete_action'];
+    $form_state['values']['usermerge_user_delete_action'] = $form_state['page_values']['merge_form']['usermerge_user_delete_action'];
     usermerge_merge_accounts($form_state['page_values']['merge_form']['user_to_delete'], $form_state['page_values']['merge_form']['user_to_keep'], $form_state['values']);
   }
 }

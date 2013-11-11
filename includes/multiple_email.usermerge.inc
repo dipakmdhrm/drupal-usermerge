@@ -14,15 +14,21 @@ function multiple_email_usermerge_actions_supported() {
     'multiple_email' => t('Choosing to keep or merge e-mail addresses managed by Multiple E-mail.')
   );
 }
+
 /**
- * Implement hook_usermerge_merge_form_alter() on behalf of multiple_email.
+ * Implement hook_form_FORM_ID_alter() on behalf of multiple_email.
  */
-function multiple_email_usermerge_merge_form_alter(&$form, $user_to_delete, $user_to_keep) {
+function multiple_email_form_usermerge_merge_form_alter(&$form, &$form_state, $form_id) {
   if ( isset($form['general']['usermerge_user_delete_action']) ) {
     $form['general']['usermerge_user_delete_action']['#default_value'] = 'delete';
     $form['general']['usermerge_user_delete_action']['#disabled'] = TRUE;
     $form['general']['usermerge_user_delete_action']['#description'] = t('Integration with Multiple E-mail requires the old account to be deleted.');
   }
+}
+
+function multiple_email_form_usermerge_data_review_form_alter(&$form, $user_to_delete, $user_to_keep) {
+  // Removes the default value for mail in the core review form
+  $form['review']['core']['mail']['options']['#default_value'] = NULL;
 }
 
 /**
@@ -40,14 +46,6 @@ function multiple_email_usermerge_account_properties($user_to_delete, $user_to_k
   );
 
   return $account_properties;
-}
-
-/**
- * Implement hook_usermerge_data_review_form_alter() on behalf of multiple_email.
- */
-function multiple_email_usermerge_data_review_form_alter(&$form, $user_to_delete, $user_to_keep) {
-  // Removes the default value for mail in the core review form
-  $form['review']['core']['mail']['options']['#default_value'] = NULL;
 }
 
 /**

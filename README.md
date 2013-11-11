@@ -16,7 +16,6 @@ Core-specific functionality (default user properties, fields) is managed in `use
 Immediate support for other modules is contained in module-specific files in the `includes` directory. These are loaded when needed by `usermerge_load_includes()` (since `usermerge_hook_info()` doesn't see them). Supported modules include:
 
 - Entity Reference
-- Field Collection
 - Multiple E-mail
 - Profile (code from version 1, left untouched)
 - RDF

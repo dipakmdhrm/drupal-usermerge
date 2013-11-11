@@ -13,7 +13,7 @@ First off, originally I though about releasing this code as a module separate fr
 
 Core-specific functionality (default user properties, fields) is managed in `usermerge.usermerge.inc`, which also includes support for entities that have a `uid` column, and basic display support for non-default user properties that aren't structured like fields (such as `rdf_mapping`).
 
-Immediate support for other modules is contained in module-specific files in the `includes` directory. These are loaded when needed by `usermerge_load_includes()` (since `usermerge_hook_info()` doesn't see them). Supporte modules include:
+Immediate support for other modules is contained in module-specific files in the `includes` directory. These are loaded when needed by `usermerge_load_includes()` (since `usermerge_hook_info()` doesn't see them). Supported modules include:
 
 - Entity Reference
 - Field Collection

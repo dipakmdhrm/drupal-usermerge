@@ -1,10 +1,11 @@
 # User merge
 
+## Necessary disclaimer for testers
+Although the module has been tested, and used successfully on production sites, it’s still to be considered alpha-grade code, so make sure you test it before using it on a production environment. Please submit issues and bug reports [directly through Github](https://github.com/antiorario/usermerge/issues).
+
 ## Development notes
 
-First off, originally I though about releasing this code as a module separate from User Merge, which is why some of the wording is different (especially in the use of the word "account" instead of "user"—there's a whole philosophical thing behind it).
-
-It's not totally compliant with Drupal's coding standards yet, but simply for readability (for instance, I prefer working with `if … endif`). But the plan was to standardize everything later.
+First off, originally I though about releasing this code as a module separate from User Merge, which is why some of the wording is different (especially in the use of the word "account" instead of "user"—there's a whole philosophical thing behind it). Now it's my intention to submit it as a candidate for a version 2 of the module. See [Ideas for a 2.x version](https://drupal.org/node/2079263).
 
 ### General changes
 
@@ -12,7 +13,7 @@ It's not totally compliant with Drupal's coding standards yet, but simply for re
 
 Core-specific functionality (default user properties, fields) is managed in `usermerge.usermerge.inc`, which also includes support for entities that have a `uid` column, and basic display support for non-default user properties that aren't structured like fields (such as `rdf_mapping`).
 
-Immediate support for other modules is contained in module-specific files (I'll commit them when they're all ready) in the `includes` directory. These are loaded when needed by `usermerge_load_includes()` (since `usermerge_hook_info()` doesn't see them).
+Immediate support for other modules is contained in module-specific files in the `includes` directory. These are loaded when needed by `usermerge_load_includes()` (since `usermerge_hook_info()` doesn't see them).
 
 I've also changed slightly the way supported actions are displayed.
 

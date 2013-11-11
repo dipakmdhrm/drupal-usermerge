@@ -1,7 +1,7 @@
 # User merge
 
 ## Necessary disclaimer for testers
-Although the module has been tested, and used successfully on production sites, it’s still to be considered alpha-grade code, so make sure you test it before using it on a production environment. Please submit issues and bug reports [directly through Github](https://github.com/antiorario/usermerge/issues).
+Although the module has been tested, and used successfully on production sites, it’s still to be considered alpha-grade code, so make sure you test it before using it on a production environment. Please submit issues and bug reports [directly through GitHub](https://github.com/antiorario/usermerge/issues).
 
 ## Development notes
 

@@ -344,8 +344,22 @@ function usermerge_usermerge_merge_accounts($user_to_delete, $user_to_keep, $rev
               break;
 
               case 'fields' :
-                foreach ( $user_to_delete->{$property_name} as $language => $items ) {
-                  $merged_account[$property_name][$language] = array_merge($user_to_delete->{$property_name}[$language], $user_to_keep->{$property_name}[$language]);
+                // $user_to_delete has data in the field
+                if ( count($user_to_delete->{$property_name}) ) {             
+                  foreach ( $user_to_delete->{$property_name} as $language => $items ) {
+                    // $user_to_keep has data in the field
+                    if ( isset($user_to_keep->{$property_name}[$language]) ) {
+                      $merged_account[$property_name][$language] = array_merge($user_to_delete->{$property_name}[$language], $user_to_keep->{$property_name}[$language]);
+                    }
+                    else {
+                      $merged_account[$property_name][$language] = $user_to_delete->{$property_name}[$language];
+                    }
+                  }
+                }
+                // $user_to_delete does not have data in the field, but $user_to_keep does
+                // No need to iterate
+                elseif ( count($user_to_keep->{$property_name}) ) {
+                  $merged_account[$property_name] = $user_to_keep->{$property_name};
                 }
               break;
             }

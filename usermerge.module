@@ -314,12 +314,6 @@ function usermerge_hook_info() {
     'usermerge_account_properties_alter' => array(
       'group' => 'usermerge'
     ),
-    'usermerge_merge_form_alter' => array(
-      'group' => 'usermerge'
-    ),
-    'usermerge_data_review_form' => array(
-      'group' => 'usermerge'
-    ),
     'usermerge_build_review_form_elements' => array(
       'group' => 'usermerge'
     ),

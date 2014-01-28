@@ -3,7 +3,7 @@
  * @file
  *  Hooks provided by the User Merge module.
  */
- 
+
 /**
  * @addtogroup hooks
  * @{
@@ -21,7 +21,7 @@ function hook_usermerge_actions_supported() {
 }
 
 /**
- * Define which properties of the user account will be merged
+ * Define which properties of the user account will be merged.
  *
  * @param $user_to_delete
  *  The full object of the user to delete.
@@ -30,7 +30,7 @@ function hook_usermerge_actions_supported() {
  */
 function hook_usermerge_account_properties($user_to_delete, $user_to_keep) {
   // Example taken from usermerge_usermerge_account_properties()
-  
+
   // Define list of fields and other user data
   // Using the columns in the user table, so non-field data added from other modules doesn't get mixed in
   $user_entity_info = entity_get_info('user');
@@ -147,7 +147,7 @@ function hook_usermerge_account_properties($user_to_delete, $user_to_keep) {
 }
 
 /**
- * Perform alterations to the list of properties before it's displayed
+ * Perform alterations to the list of properties before it's displayed.
  *
  * @param $properties
  *  The full properties array.
@@ -160,13 +160,13 @@ function hook_usermerge_account_properties($user_to_delete, $user_to_keep) {
  */
 function hook_usermerge_account_properties_alter(&$properties, $user_to_delete, $user_to_keep) {
   // Example taken from rdf_usermerge_account_properties_alter()
-  
+
   // Sets the default to the value of $user_to_keep
   $properties['other']['items']['rdf_mapping']['default'] = $user_to_keep->rdf_mapping;
 }
 
 /**
- * Build elements of the review table
+ * Build elements of the review table.
  *
  * @param $review
  *  The array containing review data (as form elements).
@@ -214,7 +214,7 @@ function hook_usermerge_build_review_form_elements($review, $account_properties,
 }
 
 /**
- * Merge specific account properties
+ * Merge specific account properties.
  *
  * @param $user_to_delete
  *  The full object of the user to delete.
@@ -226,7 +226,7 @@ function hook_usermerge_build_review_form_elements($review, $account_properties,
  */
 function hook_usermerge_merge_accounts($user_to_delete, $user_to_keep, $review) {
   // Example from multiple_email_usermerge_merge_accounts()
-  
+
   $emails_to_keep = $review['multiple_email']['multiple_email']['options'];
 
   if ( $emails_to_keep == 'merge' ) {
@@ -264,7 +264,7 @@ function hook_usermerge_merge_accounts($user_to_delete, $user_to_keep, $review) 
 }
 
 /**
- * Alter merged data before saving account
+ * Alter merged data before saving account.
  *
  * @param $merged_account
  *  The full object of the merged account.
@@ -277,10 +277,10 @@ function hook_usermerge_merge_accounts($user_to_delete, $user_to_keep, $review) 
  */
 function hook_usermerge_merge_accounts_alter($merged_account, $user_to_delete, $user_to_keep) {
   // Example from realname_usermerge_merge_accounts_alter()
-  
+
   // Removes the Real Name, which will be recreated automatically
   $merged_account['realname'] = NULL;
-  
+
   return $merged_account;
 }
 /**

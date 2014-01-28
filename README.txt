@@ -2,7 +2,7 @@
 
 ## Notes for version 2.x
 
-A new interface allows users with the right permissions to choose how each user property should. This includes the ability to merge fields, referencing entities, and other entities owned by the selected users. This aims to provide a more finely tuned merge process, as well as to minimize errors and information loss.
+A new interface allows users with the right permissions to choose how each user property should be merged. This includes the ability to merge fields, referencing entities, and other entities owned by the selected users. This aims to provide a more finely tuned merge process, as well as to minimize errors and information loss.
 
 ### General changes
 

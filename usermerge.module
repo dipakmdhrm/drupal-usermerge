@@ -70,23 +70,21 @@ function usermerge_merge_form($form, &$form_state) {
 
   $form['general']['usermerge_user_delete'] = array(
     '#type' => 'textfield',
-    '#title' => t('The name of the account to remove'),
-    '#description' => t('All content associated with this user will be changed so it is associated with the other user.'),
+    '#title' => t('The name of the account you want to remove'),
     '#autocomplete_path' => 'user/autocomplete',
     '#required' => TRUE,
   );
 
   $form['general']['usermerge_user_keep'] = array(
     '#type' => 'textfield',
-    '#title' => t('The name of the account to keep'),
-    '#description' => t('The account to use in the future.'),
+    '#title' => t('The name of the account you want to keep'),
     '#autocomplete_path' => 'user/autocomplete',
     '#required' => TRUE,
   );
 
   $form['general']['usermerge_user_delete_action'] = array(
     '#type' => 'select',
-    '#title' => t('Action to perform on old account'),
+    '#title' => t('Action to perform on the account you want to remove'),
     '#options' => array(
       'block' => t('Block'),
       'delete' => t('Delete')
@@ -220,7 +218,7 @@ function usermerge_merge_form_validate($form, &$form_state) {
  * @param $user_to_delete
  *   Object of user to be deleted
  * @param $user_to_keep
- *   Object of user to be keep
+ *   Object of user to be kept
  */
 function usermerge_validate_merge($user_to_delete, $user_to_keep) {
   $valid = TRUE;
@@ -236,7 +234,7 @@ function usermerge_validate_merge($user_to_delete, $user_to_keep) {
 
   // Don't remove UID 1.
   if ($user_to_delete->uid == 1) {
-    form_set_error('usermerge_user_delete', 'Woah buddy, blocking user 1 is not a good idea.');
+    form_set_error('usermerge_user_delete', 'Blocking user 1 is not allowed.');
     $valid = FALSE;
   }
   return $valid;
@@ -267,7 +265,7 @@ function usermerge_merge_form_submit($form, &$form_state) {
  * Merges the selected accounts.
  *
  * @param object $user_to_delete
- *   A fully loaded user object from user_load() that will be merged and blocked.
+ *   A fully loaded user object from user_load() that will be merged and blocked or deleted.
  * @param object $user_to_keep
  *   A fully loaded user object from user_load() that will be merged and retained.
  * @param $form_values
@@ -305,7 +303,7 @@ function usermerge_merge_accounts($user_to_delete, $user_to_keep, $form_values) 
     // Save merged account
     user_save($merged_account);
 
-    drupal_set_message(t('We successfully merged %user_to_delete into %user_to_keep', array('%user_to_delete' => $user_to_delete->name, '%user_to_keep' => $user_to_keep->name)));
+    drupal_set_message(t('%user_to_delete was successfully merged into %user_to_keep', array('%user_to_delete' => $user_to_delete->name, '%user_to_keep' => $user_to_keep->name)));
     return TRUE;
   }
   else {

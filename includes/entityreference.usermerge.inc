@@ -3,7 +3,6 @@
  * @file
  * Adds support for Entity Reference.
  * Supplemental include loaded via usermerge_load_includes().
- *
  */
 
 /**
@@ -134,6 +133,9 @@ function entityreference_usermerge_merge_accounts($user_to_delete, $user_to_keep
   }
 }
 
+/**
+ * Selects entities that reference users via the Entity Reference module.
+ */
 function _entityreference_usermerge_get_referencing_entity_types() {
   $fields = field_info_instances();
 

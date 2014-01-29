@@ -3,11 +3,10 @@
  * @file
  * Adds support for Multiple E-mail.
  * Supplemental include loaded via usermerge_load_includes().
- *
  */
 
 /**
- * Implement hook_usermerge_actions_supported() on behalf of multiple_email.
+ * Implements hook_usermerge_actions_supported() on behalf of multiple_email.
  */
 function multiple_email_usermerge_actions_supported() {
   return array(
@@ -16,7 +15,7 @@ function multiple_email_usermerge_actions_supported() {
 }
 
 /**
- * Implement hook_form_FORM_ID_alter() on behalf of multiple_email.
+ * Implements hook_form_FORM_ID_alter() on behalf of multiple_email.
  */
 function multiple_email_form_usermerge_merge_form_alter(&$form, &$form_state, $form_id) {
   if ( isset($form['general']['usermerge_user_delete_action']) ) {
@@ -26,13 +25,16 @@ function multiple_email_form_usermerge_merge_form_alter(&$form, &$form_state, $f
   }
 }
 
+/**
+ * Implements hook_form_FORM_ID_alter() on behalf of multiple_email.
+ */
 function multiple_email_form_usermerge_data_review_form_alter(&$form, $user_to_delete, $user_to_keep) {
   // Removes the default value for mail in the core review form
   $form['review']['core']['mail']['options']['#default_value'] = NULL;
 }
 
 /**
- * Implement hook_usermerge_account_properties() on behalf of multiple_email.
+ * Implements hook_usermerge_account_properties() on behalf of multiple_email.
  */
 function multiple_email_usermerge_account_properties($user_to_delete, $user_to_keep) {
   $account_properties['multiple_email'] = array(
@@ -49,7 +51,7 @@ function multiple_email_usermerge_account_properties($user_to_delete, $user_to_k
 }
 
 /**
- * Implement hook_usermerge_build_review_form_elements() on behalf of multiple_email.
+ * Implements hook_usermerge_build_review_form_elements() on behalf of multiple_email.
  */
 function multiple_email_usermerge_build_review_form_elements($review, $account_properties, $user_to_delete, $user_to_keep) {
   $emails_user_to_delete = implode(', ', _multiple_email_usermerge_load_addresses($user_to_delete->uid));
@@ -125,7 +127,9 @@ function multiple_email_usermerge_merge_accounts($user_to_delete, $user_to_keep,
   }
 }
 
-// Returns a keyed array of email addresses to be displayed in the review form
+/**
+ * Returns a keyed array of email addresses to be displayed in the review form.
+ */
 function _multiple_email_usermerge_load_addresses($uid) {
   $addresses = multiple_email_load_addresses($uid);
 

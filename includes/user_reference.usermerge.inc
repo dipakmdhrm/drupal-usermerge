@@ -3,11 +3,10 @@
  * @file
  * Adds support for User Reference (References).
  * Supplemental include loaded via usermerge_load_includes().
- *
  */
 
 /**
- * Implement hook_usermerge_build_review_form_elements().
+ * Implements hook_usermerge_build_review_form_elements().
  */
 function user_reference_usermerge_build_review_form_elements($review, $account_properties, $user_to_delete, $user_to_keep) {
   $entities = _user_reference_usermerge_get_referencing_entity_types();
@@ -93,7 +92,7 @@ function user_reference_usermerge_build_review_form_elements($review, $account_p
 }
 
 /**
- * Implement hook_usermerge_actions_supported().
+ * Implements hook_usermerge_actions_supported().
  */
 function user_reference_usermerge_actions_supported($items) {
   return array(
@@ -133,6 +132,9 @@ function user_reference_usermerge_merge_accounts($user_to_delete, $user_to_keep,
   }
 }
 
+/**
+ * Selects entities that reference users via the References module.
+ */
 function _user_reference_usermerge_get_referencing_entity_types() {
   $fields = field_info_instances();
 

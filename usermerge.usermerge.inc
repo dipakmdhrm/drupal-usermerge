@@ -284,6 +284,9 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
   return $review;
 }
 
+/**
+ * Selects entities with a uid column.
+ */
 function usermerge_get_authorable_entities() {
   $entities = entity_get_info();
 
@@ -299,6 +302,9 @@ function usermerge_get_authorable_entities() {
   return $entities;
 }
 
+/**
+ * Selects entities whose uid matches the selected user.
+ */
 function usermerge_query_authored_entities($entities, $user_id) {
   $found_entities = array();
 

@@ -74,21 +74,21 @@ function usermerge_merge_form($form, &$form_state) {
 
   $form['general']['usermerge_user_delete'] = array(
     '#type' => 'textfield',
-    '#title' => t('The name of the account you want to remove'),
+    '#title' => t('The name of the account you wish to remove'),
     '#autocomplete_path' => 'user/autocomplete',
     '#required' => TRUE,
   );
 
   $form['general']['usermerge_user_keep'] = array(
     '#type' => 'textfield',
-    '#title' => t('The name of the account you want to keep'),
+    '#title' => t('The name of the account you wish to keep'),
     '#autocomplete_path' => 'user/autocomplete',
     '#required' => TRUE,
   );
 
   $form['general']['usermerge_user_delete_action'] = array(
     '#type' => 'select',
-    '#title' => t('Action to perform on the account you want to remove'),
+    '#title' => t('Action to perform on the account you wish to remove'),
     '#options' => array(
       'block' => t('Block'),
       'delete' => t('Delete')

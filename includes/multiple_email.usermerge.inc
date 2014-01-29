@@ -21,7 +21,7 @@ function multiple_email_form_usermerge_merge_form_alter(&$form, &$form_state, $f
   if ( isset($form['general']['usermerge_user_delete_action']) ) {
     $form['general']['usermerge_user_delete_action']['#default_value'] = 'delete';
     $form['general']['usermerge_user_delete_action']['#disabled'] = TRUE;
-    $form['general']['usermerge_user_delete_action']['#description'] = t('Integration with Multiple E-mail requires the old account to be deleted.');
+    $form['general']['usermerge_user_delete_action']['#description'] = t('Integration with Multiple E-mail requires the account to be deleted.');
   }
 }
 

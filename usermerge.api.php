@@ -11,11 +11,14 @@
 
 /**
  * Add elements to the list of supported actions.
+ * 
+ * The returned array will be sorted by key, so the hook implementation can
+ * adjust the order by returning appropriate key names.
  */
 function hook_usermerge_actions_supported() {
   return array(
-    'core' => t('Choosing which user information (default properties and custom fields, if available) should be kept, discarded, or merged (this choice is not available for all properties).'),
-    'entities' => t('Assigning to the new user any entities (such as nodes and comments) previously associated with the old user.')
+    'a-core' => t('Choosing which user information (default properties and custom fields, if available) should be kept, discarded, or merged (this choice is not available for all properties).'),
+    'a-entities' => t('Assigning to the new user any entities (such as nodes and comments) previously associated with the old user.')
   );
 }
 

@@ -66,7 +66,11 @@ function usermerge_merge_form($form, &$form_state) {
     '#type' => 'ul',
   );
 
-  $form['supported_actions']['list']['#items'] = module_invoke_all('usermerge_actions_supported', array());
+  $supported_actions = module_invoke_all('usermerge_actions_supported', array());
+  
+  ksort($supported_actions);
+
+  $form['supported_actions']['list']['#items'] = $supported_actions;
 
   $form['general']['usermerge_user_delete'] = array(
     '#type' => 'textfield',

@@ -39,7 +39,7 @@ function usermerge_menu() {
  */
 function usermerge_page() {
   usermerge_load_includes();
-  
+
   return drupal_get_form('usermerge_merge_form');
 }
 

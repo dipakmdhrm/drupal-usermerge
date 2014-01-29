@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Main file for the User merge module.
+ * Main file for the User Merge module.
  *
  */
 
@@ -32,16 +32,19 @@ function usermerge_menu() {
   return $items;
 }
 
+/**
+ * Loads includes before calling drupal_get_form().
+ *
+ * @see usermerge_merge_form()
+ */
 function usermerge_page() {
-  // Load includes before calling drupal_get_form
   usermerge_load_includes();
   
   return drupal_get_form('usermerge_merge_form');
 }
 
 /**
- * Form to collect the two uids.
- *
+ * Form to collect the two user IDs.
  */
 function usermerge_merge_form($form, &$form_state) {
   if ( !empty($form_state['form_page']) && $form_state['form_page'] == 'review_table' ) {
@@ -101,7 +104,7 @@ function usermerge_merge_form($form, &$form_state) {
 }
 
 /**
- * Allows the selection of data to be merged
+ * Form that allows the selection of data to be merged.
  */
 function usermerge_data_review_form($form, &$form_state) {
   drupal_set_title(t('Merge accounts: review account data'));
@@ -132,6 +135,9 @@ function usermerge_data_review_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ * Implements hook_theme().
+ */
 function usermerge_theme() {
   $theme['usermerge_data_review_form_table'] = array(
     'render element' => 'element'
@@ -140,6 +146,9 @@ function usermerge_theme() {
   return $theme;
 }
 
+/**
+ * Returns HTML for each data-review table.
+ */
 function theme_usermerge_data_review_form_table($variables) {
   $element = $variables['element'];
 
@@ -186,7 +195,7 @@ function theme_usermerge_data_review_form_table($variables) {
 }
 
 /**
- * Validates contents of form for user validation
+ * Validates contents of form for user validation.
  */
 function usermerge_merge_form_validate($form, &$form_state) {
   // Validate first step
@@ -209,9 +218,9 @@ function usermerge_merge_form_validate($form, &$form_state) {
  * Helper validation function used by the form submit and the API.
  *
  * @param $user_to_delete
- *  Object of user to be deleted
+ *   Object of user to be deleted
  * @param $user_to_keep
- *  Object of user to be keep
+ *   Object of user to be keep
  */
 function usermerge_validate_merge($user_to_delete, $user_to_keep) {
   $valid = TRUE;
@@ -235,7 +244,7 @@ function usermerge_validate_merge($user_to_delete, $user_to_keep) {
 
 
 /**
- * Merges two users after submitting merge form
+ * Displays the userdata-review form, or merges the selected accounts.
  */
 function usermerge_merge_form_submit($form, &$form_state) {
   if ( !isset($form_state['form_page']) ) {
@@ -255,12 +264,14 @@ function usermerge_merge_form_submit($form, &$form_state) {
 }
 
 /**
- * The function to do the work.  Custom developers: use this as your API entry point.
+ * Merges the selected accounts.
  *
  * @param object $user_to_delete
  *   A fully loaded user object from user_load() that will be merged and blocked.
  * @param object $user_to_keep
  *   A fully loaded user object from user_load() that will be merged and retained.
+ * @param $form_values
+ *   The values from the submitted data-review form.
  * @return boolean
  *   TRUE if they are merged, FALSE if the validation failed.
  */
@@ -302,7 +313,9 @@ function usermerge_merge_accounts($user_to_delete, $user_to_keep, $form_values) 
   }
 }
 
-// Register hooks
+/**
+ * Implements hook_hook_info().
+ */
 function usermerge_hook_info() {
   $hooks = array(
     'usermerge_actions_supported' => array(
@@ -328,7 +341,9 @@ function usermerge_hook_info() {
   return $hooks;
 }
 
-// Calls supplemental includes
+/**
+ * Calls supplemental includes.
+ */
 function usermerge_load_includes() {
   foreach ( module_list() as $module ) {
     module_load_include('inc', 'usermerge', 'includes/' . $module . '.usermerge');

@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- *  Hooks provided by the User Merge module.
+ * Hooks provided by the User Merge module.
  */
 
 /**
@@ -11,7 +11,6 @@
 
 /**
  * Add elements to the list of supported actions.
- *
  */
 function hook_usermerge_actions_supported() {
   return array(
@@ -24,9 +23,9 @@ function hook_usermerge_actions_supported() {
  * Define which properties of the user account will be merged.
  *
  * @param $user_to_delete
- *  The full object of the user to delete.
+ *   The full object of the user to delete.
  * @param $user_to_keep
- *  The full object of the user to keep.
+ *   The full object of the user to keep.
  */
 function hook_usermerge_account_properties($user_to_delete, $user_to_keep) {
   // Example taken from usermerge_usermerge_account_properties()
@@ -150,11 +149,11 @@ function hook_usermerge_account_properties($user_to_delete, $user_to_keep) {
  * Perform alterations to the list of properties before it's displayed.
  *
  * @param $properties
- *  The full properties array.
+ *   The full properties array.
  * @param $user_to_delete
- *  The full object of the user to delete.
+ *   The full object of the user to delete.
  * @param $user_to_keep
- *  The full object of the user to keep.
+ *   The full object of the user to keep.
  *
  * @see hook_usermerge_account_properties()
  */
@@ -169,14 +168,13 @@ function hook_usermerge_account_properties_alter(&$properties, $user_to_delete, 
  * Build elements of the review table.
  *
  * @param $review
- *  The array containing review data (as form elements).
+ *   The array containing review data (as form elements).
  * @param $account_properties
- *  The array of account properties to be merged.
+ *   The array of account properties to be merged.
  * @param $user_to_delete
- *  The full object of the user to delete.
+ *   The full object of the user to delete.
  * @param $user_to_keep
- *  The full object of the user to keep.
- *
+ *   The full object of the user to keep.
  */
 function hook_usermerge_build_review_form_elements($review, $account_properties, $user_to_delete, $user_to_keep) {
   // Example from multiple_email_usermerge_build_review_form_elements()
@@ -217,12 +215,11 @@ function hook_usermerge_build_review_form_elements($review, $account_properties,
  * Merge specific account properties.
  *
  * @param $user_to_delete
- *  The full object of the user to delete.
+ *   The full object of the user to delete.
  * @param $user_to_keep
- *  The full object of the user to keep.
+ *   The full object of the user to keep.
  * @param $review
- *  The array containing review data (as form elements).
- *
+ *   The array containing review data (as form elements).
  */
 function hook_usermerge_merge_accounts($user_to_delete, $user_to_keep, $review) {
   // Example from multiple_email_usermerge_merge_accounts()
@@ -267,11 +264,11 @@ function hook_usermerge_merge_accounts($user_to_delete, $user_to_keep, $review) 
  * Alter merged data before saving account.
  *
  * @param $merged_account
- *  The full object of the merged account.
+ *   The full object of the merged account.
  * @param $user_to_delete
- *  The full object of the user to delete.
+ *   The full object of the user to delete.
  * @param $user_to_keep
- *  The full object of the user to keep.
+ *   The full object of the user to keep.
  *
  * @see hook_usermerge_merge_accounts()
  */

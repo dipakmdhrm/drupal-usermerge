@@ -3,10 +3,10 @@
  * @file
  * Adds support for Profile.
  * Supplemental include loaded via usermerge_load_includes().
- *
  */
+
 /**
- * Implement hook_usermerge_actions_supported().
+ * Implements hook_usermerge_actions_supported().
  */
 function profile_usermerge_actions_supported() {
   return array(
@@ -15,10 +15,9 @@ function profile_usermerge_actions_supported() {
 }
 
 /**
- * Implement hook_usermerge_merge_users() on behalf of profile module.
- * Same as in usermerge.module
+ * Implements hook_usermerge_merge_accounts() on behalf of profile module.
  */
-function profile_usermerge_merge_users($user_to_delete, $user_to_keep) {
+function profile_usermerge_merge_accounts($user_to_delete, $user_to_keep, $review) {
   // retrieve kept-user's user field values
   if (module_exists('profile')) { //testing for profile, which is hidden in D6
       $result = db_query("SELECT fid FROM {profile_values} WHERE uid = :uid AND VALUE <> ''", array(':uid' => $user_to_keep->uid));

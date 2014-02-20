@@ -227,18 +227,18 @@ function usermerge_merge_form_validate($form, &$form_state) {
 function usermerge_validate_merge($user_to_delete, $user_to_keep) {
   $valid = TRUE;
   if (empty($user_to_delete->uid)) {
-    form_set_error('usermerge_user_delete', 'This user name does not exist.');
+    form_set_error('usermerge_user_delete', t('This user name does not exist.'));
     $valid = FALSE;
   }
 
   if (empty($user_to_keep->uid)) {
-    form_set_error('usermerge_user_keep', 'This user name does not exist.');
+    form_set_error('usermerge_user_keep', t('This user name does not exist.'));
     $valid = FALSE;
   }
 
   // Don't remove UID 1.
   if ($user_to_delete->uid == 1) {
-    form_set_error('usermerge_user_delete', 'Blocking user 1 is not allowed.');
+    form_set_error('usermerge_user_delete', t('Blocking user 1 is not allowed.'));
     $valid = FALSE;
   }
   return $valid;

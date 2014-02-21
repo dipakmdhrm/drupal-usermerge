@@ -351,7 +351,7 @@ function usermerge_usermerge_merge_accounts($user_to_delete, $user_to_keep, $rev
 
               case 'fields' :
                 // $user_to_delete has data in the field
-                if ( count($user_to_delete->{$property_name}) ) {             
+                if ( count($user_to_delete->{$property_name}) ) {
                   foreach ( $user_to_delete->{$property_name} as $language => $items ) {
                     // $user_to_keep has data in the field
                     if ( isset($user_to_keep->{$property_name}[$language]) ) {

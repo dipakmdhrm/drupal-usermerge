@@ -108,11 +108,11 @@ function usermerge_self_merge_form_submit($form, &$form_state) {
               if ( isset($properties['options']['#options']) ) {
                 // If the property has a merge options, merge data
                 if ( isset($properties['options']['#options']['merge']) && $properties['options']['#options']['merge'] == 'merge' ) {
-                  $review_form_state['values'][$component][$name]['options'] = 'merge';
+                  $review_form_state['values']['review'][$component][$name]['options'] = 'merge';
                 }
                 // Otherwise use data from account to keep
                 else {
-                  $review_form_state['values'][$component][$name]['options'] = 'user_to_keep';
+                  $review_form_state['values']['review'][$component][$name]['options'] = 'user_to_keep';
                 }
               }
               else {
@@ -122,7 +122,7 @@ function usermerge_self_merge_form_submit($form, &$form_state) {
                 if ( count($properties) ) {
                   foreach ( $properties as $property_name => $property ) {
                     if ( isset($property['#value']) ) {
-                      $review_form_state['values'][$component][$name][$property_name] = $property['#value'];
+                      $review_form_state['values']['review'][$component][$name][$property_name] = $property['#value'];
                     }
                   }
                 }

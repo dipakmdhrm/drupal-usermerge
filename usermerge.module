@@ -38,8 +38,6 @@ function usermerge_menu() {
  * @see usermerge_merge_form()
  */
 function usermerge_page() {
-  usermerge_load_includes();
-
   return drupal_get_form('usermerge_merge_form');
 }
 
@@ -66,8 +64,8 @@ function usermerge_merge_form($form, &$form_state) {
     '#type' => 'ul',
   );
 
-  $supported_actions = module_invoke_all('usermerge_actions_supported', array());
-  
+  $supported_actions = usermerge_invoke_all('usermerge_actions_supported', array());
+
   ksort($supported_actions);
 
   $form['supported_actions']['list']['#items'] = $supported_actions;
@@ -115,11 +113,11 @@ function usermerge_data_review_form($form, &$form_state) {
   $user_to_keep = $form_state['values']['user_to_keep'];
 
   // Invoke hook_usermerge_account_properties
-  $account_properties = module_invoke_all('usermerge_account_properties', $user_to_delete, $user_to_keep);
+  $account_properties = usermerge_invoke_all('usermerge_account_properties', $user_to_delete, $user_to_keep);
   // Allow modules to alter pre-existing account properties
   drupal_alter('usermerge_account_properties', $account_properties, $user_to_delete, $user_to_keep);
 
-  $form['review'] = module_invoke_all('usermerge_build_review_form_elements', array(), $account_properties, $user_to_delete, $user_to_keep);
+  $form['review'] = usermerge_invoke_all('usermerge_build_review_form_elements', array(), $account_properties, $user_to_delete, $user_to_keep);
 
   $form['review']['#type'] = 'container';
   $form['review']['#tree'] = TRUE;
@@ -278,11 +276,8 @@ function usermerge_merge_form_submit($form, &$form_state) {
  *   TRUE if they are merged, FALSE if the validation failed.
  */
 function usermerge_merge_accounts($user_to_delete, $user_to_keep, $form_values) {
-  // Load includes
-  usermerge_load_includes();
-
   if (usermerge_validate_merge($user_to_delete, $user_to_keep)) {
-    $merged_account = module_invoke_all('usermerge_merge_accounts', $user_to_delete, $user_to_keep, $form_values['review']);
+    $merged_account = usermerge_invoke_all('usermerge_merge_accounts', $user_to_delete, $user_to_keep, $form_values['review']);
 
     // This allows modules to modify the array without merging values
     drupal_alter('usermerge_merge_accounts_alter', $merged_account, $user_to_delete, $user_to_keep);
@@ -344,10 +339,66 @@ function usermerge_hook_info() {
 }
 
 /**
- * Calls supplemental includes.
+ * Calls all includes.
+ *
+ * Ideally, this function should call only supplemental includes provided by
+ * the module itself, but supplemental includes conflict with includes provided
+ * by other modules, making the whole module unreliable quite randomly.
  */
 function usermerge_load_includes() {
   foreach ( module_list() as $module ) {
-    module_load_include('inc', 'usermerge', 'includes/' . $module . '.usermerge');
+    // Load MODULE.usermerge.inc files
+    if ( !($file = module_load_include('inc', $module, $module . '.usermerge')) ) {
+      // Load supplemental includes only if the module doesn't provide its own implementation
+      $file = module_load_include('inc', 'usermerge', 'includes/' . $module . '.usermerge');
+    }
   }
+}
+
+/**
+ * Invokes a hook in all enabled modules that implement it.
+ *
+ * Replaces module_invoke_all() and bypasses the cache.
+ */
+function usermerge_invoke_all($hook) {
+  usermerge_load_includes();
+
+  $args = func_get_args();
+  // Remove $hook from the arguments.
+  unset($args[0]);
+  $return = array();
+  foreach (usermerge_module_implements($hook) as $module) {
+    $function = $module . '_' . $hook;
+    if (function_exists($function)) {
+      $result = call_user_func_array($function, $args);
+      if (isset($result) && is_array($result)) {
+        $return = array_merge_recursive($return, $result);
+      }
+      elseif (isset($result)) {
+        $return[] = $result;
+      }
+    }
+  }
+
+  return $return;
+}
+
+/**
+ * Determines which modules are implementing a hook.
+ *
+ * Replaces module_implements().
+ * Does not need to load includes, because they should all have already
+ * been loaded in usermerge_invoke_all().
+ */
+function usermerge_module_implements($hook) {
+  $modules = array();
+
+  foreach ( module_list() as $module ) {
+    $function = $module . '_' . $hook;
+    if (function_exists($function)) {
+      $modules[] = $module;
+    }
+  }
+
+  return $modules;
 }

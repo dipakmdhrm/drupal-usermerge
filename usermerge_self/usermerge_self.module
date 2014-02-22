@@ -33,34 +33,34 @@ function usermerge_self_menu() {
 
 function usermerge_self_merge_form($form, &$form_state) {
   drupal_set_title(t('Merge accounts'));
-  
+
   $form['general']['usermerge_user_delete'] = array(
     '#type' => 'emailfield',
     '#title' => t('The e-mail address of the account you wish to remove'),
     '#required' => TRUE,
   );
-  
+
   $form['general']['usermerge_user_delete_password'] = array(
     '#type' => 'password',
     '#title' => t('Password'),
     '#required' => TRUE,
   );
-  
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Merge accounts')
   );
-  
+
   if ( module_exists('password_toggle') ) {
     password_toggle_add_js_and_css();
   }
-  
+
   return $form;
 }
 
 function usermerge_self_merge_form_submit($form, &$form_state) {
   $user_to_keep = $form_state['build_info']['args'][0];
-  
+
   if ( module_exists('multiple_email') ) {
     $email_to_delete = multiple_email_find_address($form_state['values']['usermerge_user_delete']);
     if ( isset($email_to_delete->uid) ) {
@@ -70,7 +70,7 @@ function usermerge_self_merge_form_submit($form, &$form_state) {
   else {
     $user_to_delete = user_load_by_mail($form_state['values']['usermerge_user_delete']);
   }
-  
+
   if ( isset($user_to_delete) && is_object($user_to_delete) ) {
     // If the entered used is the same as the current user, return an error message
     if ( $user_to_delete->uid == $user_to_keep->uid ) {
@@ -79,36 +79,36 @@ function usermerge_self_merge_form_submit($form, &$form_state) {
     }
     // Allow alternate password hashing schemes.
     require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
-    
+
     if ( user_check_password($form_state['values']['usermerge_user_delete_password'], $user_to_delete) ) {
       if ( $user_to_delete->uid == 1 ) {
         form_set_error('user_merge_delete', t('Blocking user 1 is not allowed.'));
       }
       else {
         // Build (but not display) data-review form
-        usermerge_load_includes(); 
+        usermerge_load_includes();
         $review_form_state['values']['user_to_delete'] = $user_to_delete;
         $review_form_state['values']['user_to_keep'] = $user_to_keep;
-        
+
         // This allows to call the data-review table instead of the account-selection form
         $review_form_state['form_page'] = 'review_table';
         $review_form = usermerge_merge_form(array(), $review_form_state);
-        
+
         // Build form values
         // This makes a few assumptions on modules' behavior. It would be advisable to
         // make the User Merge API documentation clearer on what modules should do.
         $review_form_state['page_values']['merge_form'] = $review_form_state['values'];
         $review = array_intersect_key($review_form['review'], array_flip(element_children($review_form['review'])));
-        
+
         foreach ( $review as $component => $items ) {
           if ( isset($items['#value']) ) {
             $review_form_state['values'][$component] = $items['#value'];
           }
           else {
             $items = array_intersect_key($items, array_flip(element_children($items)));
-            
+
             foreach ( $items as $name => $properties ) {
-              
+
               if ( isset($properties['options']['#options']) ) {
                 // If the property has a merge options, merge data
                 if ( isset($properties['options']['#options']['merge']) && $properties['options']['#options']['merge'] == 'merge' ) {
@@ -122,7 +122,7 @@ function usermerge_self_merge_form_submit($form, &$form_state) {
               else {
                 // If there are no set options, check if the module sets other form fields
                 unset($properties['property_name'], $properties['options']);
-                
+
                 if ( count($properties) ) {
                   foreach ( $properties as $property_name => $property ) {
                     if ( isset($property['#value']) ) {
@@ -134,7 +134,7 @@ function usermerge_self_merge_form_submit($form, &$form_state) {
             }
           }
         }
-        
+
         // Merge accounts
         // Force-delete old account
         $review_form_state['page_values']['merge_form']['usermerge_user_delete_action'] = 'delete';

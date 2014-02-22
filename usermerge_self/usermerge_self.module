@@ -41,7 +41,7 @@ function usermerge_self_merge_form($form, &$form_state) {
   );
   
   $form['general']['usermerge_user_delete_password'] = array(
-    '#type' => 'textfield',
+    '#type' => 'password',
     '#title' => t('Password'),
     '#required' => TRUE,
   );
@@ -50,6 +50,10 @@ function usermerge_self_merge_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Merge accounts')
   );
+  
+  if ( module_exists('password_toggle') ) {
+    password_toggle_add_js_and_css();
+  }
   
   return $form;
 }

@@ -31,6 +31,10 @@ function usermerge_self_menu() {
   return $items;
 }
 
+/**
+ * Form where the current user can enter user name and password
+ * of the account to be removed.
+ */
 function usermerge_self_merge_form($form, &$form_state) {
   drupal_set_title(t('Merge accounts'));
 
@@ -58,23 +62,17 @@ function usermerge_self_merge_form($form, &$form_state) {
   return $form;
 }
 
-function usermerge_self_merge_form_submit($form, &$form_state) {
+/**
+ * Validates the self-serve user merge form.
+ */
+function usermerge_self_merge_form_validate($form, &$form_state) {
+  $user_to_delete = usermerge_self_user_load_by_mail($form_state['values']['usermerge_user_delete']);
   $user_to_keep = $form_state['build_info']['args'][0];
-
-  if ( module_exists('multiple_email') ) {
-    $email_to_delete = multiple_email_find_address($form_state['values']['usermerge_user_delete']);
-    if ( isset($email_to_delete->uid) ) {
-      $user_to_delete = user_load($email_to_delete->uid);
-    }
-  }
-  else {
-    $user_to_delete = user_load_by_mail($form_state['values']['usermerge_user_delete']);
-  }
 
   if ( isset($user_to_delete) && is_object($user_to_delete) ) {
     // If the entered used is the same as the current user, return an error message
     if ( $user_to_delete->uid == $user_to_keep->uid ) {
-      drupal_set_message(t('You’re logged in using the same account you’re trying to merge. Please enter an e-mail address associated with a different account.'), 'error');
+      form_set_error('usermerge_user_delete', t('You’re logged in using the same account you’re trying to merge. Please enter an e-mail address associated with a different account.'));
       return FALSE;
     }
     // Allow alternate password hashing schemes.
@@ -82,70 +80,105 @@ function usermerge_self_merge_form_submit($form, &$form_state) {
 
     if ( user_check_password($form_state['values']['usermerge_user_delete_password'], $user_to_delete) ) {
       if ( $user_to_delete->uid == 1 ) {
-        form_set_error('user_merge_delete', t('Blocking user 1 is not allowed.'));
+        form_set_error('usermerge_user_delete', t('Blocking user 1 is not allowed.'));
+        return FALSE;
       }
-      else {
-        // Build (but not display) data-review form
-        usermerge_load_includes();
-        $review_form_state['values']['user_to_delete'] = $user_to_delete;
-        $review_form_state['values']['user_to_keep'] = $user_to_keep;
+    }
+    else {
+      form_set_error('usermerge_user_delete', t('Sorry, unrecognized e-mail address or password.'));
+      return FALSE;
+    }
+  }
+  else {
+    form_set_error('usermerge_user_delete', t('Sorry, unrecognized e-mail address or password.'));
+    return FALSE;
+  }
 
-        // This allows to call the data-review table instead of the account-selection form
-        $review_form_state['form_page'] = 'review_table';
-        $review_form = usermerge_merge_form(array(), $review_form_state);
+  return FALSE;
+}
 
-        // Build form values
-        // This makes a few assumptions on modules' behavior. It would be advisable to
-        // make the User Merge API documentation clearer on what modules should do.
-        $review_form_state['page_values']['merge_form'] = $review_form_state['values'];
-        $review = array_intersect_key($review_form['review'], array_flip(element_children($review_form['review'])));
+/**
+ * Submits the self-serve user merge form.
+ *
+ * It loads the data-review form structure from usermerge.module, without
+ * displaying the review table. Default decisions on how data should be handled are
+ * made on behalf of the user before submitting the review form.
+ *
+ * @see usermerge_merge_form()
+ */
+function usermerge_self_merge_form_submit($form, &$form_state) {
+  $user_to_delete = usermerge_self_user_load_by_mail($form_state['values']['usermerge_user_delete']);
+  $user_to_keep = $form_state['build_info']['args'][0];
 
-        foreach ( $review as $component => $items ) {
-          if ( isset($items['#value']) ) {
-            $review_form_state['values'][$component] = $items['#value'];
+  // Build (but not display) data-review form
+  usermerge_load_includes();
+  $review_form_state['values']['user_to_delete'] = $user_to_delete;
+  $review_form_state['values']['user_to_keep'] = $user_to_keep;
+
+  // This allows to call the data-review table instead of the account-selection form
+  $review_form_state['form_page'] = 'review_table';
+  $review_form = usermerge_merge_form(array(), $review_form_state);
+
+  // Build form values
+  // This makes a few assumptions on modules' behavior. It would be advisable to
+  // make the User Merge API documentation clearer on what modules should do.
+  $review_form_state['page_values']['merge_form'] = $review_form_state['values'];
+  $review = array_intersect_key($review_form['review'], array_flip(element_children($review_form['review'])));
+
+  foreach ( $review as $component => $items ) {
+    if ( isset($items['#value']) ) {
+      $review_form_state['values'][$component] = $items['#value'];
+    }
+    else {
+      $items = array_intersect_key($items, array_flip(element_children($items)));
+
+      foreach ( $items as $name => $properties ) {
+
+        if ( isset($properties['options']['#options']) ) {
+          // If the property has a merge options, merge data
+          if ( isset($properties['options']['#options']['merge']) && $properties['options']['#options']['merge'] == 'merge' ) {
+            $review_form_state['values']['review'][$component][$name]['options'] = 'merge';
           }
+          // Otherwise use data from account to keep
           else {
-            $items = array_intersect_key($items, array_flip(element_children($items)));
+            $review_form_state['values']['review'][$component][$name]['options'] = 'user_to_keep';
+          }
+        }
+        else {
+          // If there are no set options, check if the module sets other form fields
+          unset($properties['property_name'], $properties['options']);
 
-            foreach ( $items as $name => $properties ) {
-
-              if ( isset($properties['options']['#options']) ) {
-                // If the property has a merge options, merge data
-                if ( isset($properties['options']['#options']['merge']) && $properties['options']['#options']['merge'] == 'merge' ) {
-                  $review_form_state['values']['review'][$component][$name]['options'] = 'merge';
-                }
-                // Otherwise use data from account to keep
-                else {
-                  $review_form_state['values']['review'][$component][$name]['options'] = 'user_to_keep';
-                }
-              }
-              else {
-                // If there are no set options, check if the module sets other form fields
-                unset($properties['property_name'], $properties['options']);
-
-                if ( count($properties) ) {
-                  foreach ( $properties as $property_name => $property ) {
-                    if ( isset($property['#value']) ) {
-                      $review_form_state['values']['review'][$component][$name][$property_name] = $property['#value'];
-                    }
-                  }
-                }
+          if ( count($properties) ) {
+            foreach ( $properties as $property_name => $property ) {
+              if ( isset($property['#value']) ) {
+                $review_form_state['values']['review'][$component][$name][$property_name] = $property['#value'];
               }
             }
           }
         }
-
-        // Merge accounts
-        // Force-delete old account
-        $review_form_state['page_values']['merge_form']['usermerge_user_delete_action'] = 'delete';
-        drupal_form_submit('usermerge_merge_form', $review_form_state);
       }
     }
-    else {
-      drupal_set_message(t('Sorry, unrecognized e-mail address or password.'), 'error');
+  }
+
+  // Merge accounts
+  // Force-delete old account
+  $review_form_state['page_values']['merge_form']['usermerge_user_delete_action'] = 'delete';
+  drupal_form_submit('usermerge_merge_form', $review_form_state);
+}
+
+/**
+ * Fetches a user object by email address, using multiple_email when available.
+ */
+function usermerge_self_user_load_by_mail($email) {
+  if ( module_exists('multiple_email') ) {
+    $email = multiple_email_find_address($email);
+    if ( isset($email->uid) ) {
+      $account = user_load($email->uid);
     }
   }
   else {
-    drupal_set_message(t('Sorry, unrecognized e-mail address or password.'), 'error');
+    $account = user_load_by_mail($email);
   }
+
+  return isset($account) ? $account : NULL;
 }

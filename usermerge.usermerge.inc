@@ -193,8 +193,8 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
           $review[$property_type][$property_name]['options'] = array(
             '#type' => 'radios',
             '#options' => array(
-              'user_to_delete' => $field_user_to_delete,
-              'user_to_keep' => $field_user_to_keep,
+              'user_to_delete' => is_string($field_user_to_delete) ? $field_user_to_delete : '',
+              'user_to_keep' => is_string($field_user_to_keep) ? $field_user_to_keep : '',
             ),
           );
 

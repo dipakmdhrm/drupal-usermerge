@@ -204,9 +204,12 @@ function usermerge_merge_form_validate($form, &$form_state) {
       form_set_error('usermerge_user', 'You cannot have the same username in both fields.');
     }
 
+    $user_to_delete = user_load_multiple(array(), array('name' => $form_state['values']['usermerge_user_delete']));
+    $user_to_keep = user_load_multiple(array(), array('name' => $form_state['values']['usermerge_user_keep']));
+
     // Load up the users. We store these in the form_state['values'] so that we don't have to load again later.
-    $form_state['values']['user_to_delete'] = array_shift(user_load_multiple(array(), array('name' => $form_state['values']['usermerge_user_delete'])));
-    $form_state['values']['user_to_keep'] = array_shift(user_load_multiple(array(), array('name' => $form_state['values']['usermerge_user_keep'])));
+    $form_state['values']['user_to_delete'] = array_shift($user_to_delete);
+    $form_state['values']['user_to_keep'] = array_shift($user_to_keep);
 
     // Use the validate helper function.
     usermerge_validate_merge($form_state['values']['user_to_delete'], $form_state['values']['user_to_keep']);

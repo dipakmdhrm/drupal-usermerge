@@ -282,7 +282,7 @@ function usermerge_merge_accounts($user_to_delete, $user_to_keep, $form_values) 
     $merged_account = usermerge_invoke_all('usermerge_merge_accounts', $user_to_delete, $user_to_keep, $form_values['review']);
 
     // This allows modules to modify the array without merging values
-    drupal_alter('usermerge_merge_accounts_alter', $merged_account, $user_to_delete, $user_to_keep);
+    drupal_alter('usermerge_merge_accounts', $merged_account, $user_to_delete, $user_to_keep);
 
     $merged_account = (object) $merged_account;
 

@@ -17,12 +17,7 @@ function usermerge_usermerge_actions_supported() {
  * Implement hook_usermerge_account_properties().
  */
 function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) {
-  // Define list of fields and other user data
-  // Using the columns in the user table, so non-field data added from other modules doesn't get mixed in
-  $user_entity_info = entity_get_info('user');
-  $user_entity_properties['core'] = $user_entity_info['schema_fields_sql']['base table'];
-  // Adding roles
-  $user_entity_properties['core'][] = 'roles';
+  $user_entity_properties['core'] = usermerge_get_user_core_properties();
 
   // Define an array of properties that can be used to display the data-review table(s)
   $account_properties = array(
@@ -60,22 +55,29 @@ function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) 
 
   foreach ( $user_entity_properties as $type => $properties ) {
     foreach ( array_flip($properties) as $property_name => $delta ) {
-      $account_properties[$type]['items'][$property_name] = array(
-        'name' => $property_name,
-        'criterion' => 'merge'
-      );
+      // Exclude properties that shouldn't be merged, like password
+      // These could be defined via settings page
+      if ( !in_array($property_name, array('pass')) ) {
+        $account_properties[$type]['items'][$property_name] = array(
+          'name' => $property_name,
+          'criterion' => 'merge'
+        );
+      }
     }
   }
 
-  // These could be defined via settings page
-  // Remove unwanted items
-  unset($user_entity_properties, $account_properties['core']['items']['pass']);
-
   // Set default choices for core properties
   // This could be defined via settings page
-  $account_properties['core']['items']['theme']['default'] = $user_to_keep->theme;
-  $account_properties['core']['items']['signature']['default'] = $user_to_keep->signature;
-  $account_properties['core']['items']['signature_format']['default'] = $user_to_keep->signature_format;
+  $usermerge_settings = variable_get('usermerge_settings', array());
+
+  foreach ( $usermerge_settings['core'] as $property_name => $setting_value ) {
+    if ( empty($setting_value) ) {
+      // If the property is not checked in settings, set a default
+      $account_properties['core']['items'][$property_name]['default'] = $user_to_keep->{$property_name};
+    }
+  }
+
+  // Automatically handle properties that can't be exposed via settings:
 
   // Choose older created date
   if ( $user_to_delete->created < $user_to_keep->created ) {
@@ -93,21 +95,27 @@ function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) 
     $account_properties['core']['items']['access']['default'] = $user_to_keep->access;
   }
 
-  $account_properties['core']['items']['login']['default'] = $user_to_keep->login;
-  $account_properties['core']['items']['status']['default'] = $user_to_keep->status;
-  $account_properties['core']['items']['timezone']['default'] = $user_to_keep->timezone;
-  $account_properties['core']['items']['language']['default'] = $user_to_keep->language;
-  $account_properties['core']['items']['picture']['default'] = $user_to_keep->picture;
+  // Choose newer login date
+  if ( $user_to_delete->login > $user_to_keep->login ) {
+    $account_properties['core']['items']['login']['default'] = $user_to_delete->login;
+  }
+  else {
+    $account_properties['core']['items']['login']['default'] = $user_to_keep->login;
+  }
+
   $account_properties['core']['items']['init']['default'] = $user_to_keep->init;
   $account_properties['core']['items']['data']['default'] = $user_to_keep->data;
 
-  // Keep the ability to choose between roles of the two users, but set the default option to merge
-  $account_properties['core']['items']['roles']['default_option'] = 'merge';
-
-  // Properties that should not have a "both" option
-  $account_properties['core']['items']['uid']['criterion'] = 'no_merge';
-  $account_properties['core']['items']['name']['criterion'] = 'no_merge';
-  $account_properties['core']['items']['mail']['criterion'] = 'no_merge';
+  foreach ( $account_properties['core']['items'] as $property_name => $settings ) {
+    if ( $property_name == 'roles' ) {
+      // Keep the ability to choose between roles of the two users, but set the default option to merge
+      $account_properties['core']['items'][$property_name]['default_option'] = 'merge';
+    }
+    else {
+      // All other properties should not have a "both" option
+      $account_properties['core']['items'][$property_name]['criterion'] = 'no_merge';
+    }
+  }
 
   // Special settings for fields
   foreach ( $account_properties['fields']['items'] as $field_name => $properties ) {
@@ -216,7 +224,10 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
               break;
             case 'no_merge' :
               $review[$property_type][$property_name]['options']['#options']['merge'] = 'no_merge';
-              $review[$property_type][$property_name]['options']['#disabled'] = TRUE;
+              // uid, name, and mail should be visible but disabled
+              if ( in_array($property_name, array('uid', 'name', 'mail')) ) {
+                $review[$property_type][$property_name]['options']['#disabled'] = TRUE;
+              }
             break;
           }
 

@@ -13,6 +13,9 @@ function usermerge_permission() {
     'merge accounts' => array(
       'title' => t('Merge accounts'),
     ),
+    'administer usermerge settings' => array(
+      'title' => t('Administer User Merge settings'),
+    ),
   );
 }
 
@@ -26,6 +29,14 @@ function usermerge_menu() {
     'access callback' => 'user_access',
     'access arguments' => array('merge accounts'),
     'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/config/people/usermerge'] = array(
+    'title' => 'User Merge settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('usermerge_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer usermerge settings'),
   );
 
   return $items;
@@ -404,4 +415,56 @@ function usermerge_module_implements($hook) {
   }
 
   return $modules;
+}
+
+/**
+ * Form builder for User Merge settings.
+ */
+function usermerge_settings() {
+  $usermerge_settings = variable_get('usermerge_settings', array());
+  $core_properties = usermerge_get_user_core_properties();
+
+  $form['core'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Core properties'),
+    '#description' => t('By default, the module handles core properties automatically, by keeping the value from the user to keep. This is why most of them do not appear in the review table. If you want to display some core properties in the review table, enable them here by checking the relevant boxes.'),
+    '#tree' => TRUE
+  );
+
+  foreach ( $core_properties as $property ) {
+    // For some properties there is never a choice
+    if ( !in_array($property, array('uid', 'created', 'access', 'login', 'pass', 'name', 'mail', 'init', 'data', 'roles')) ) {
+      $form['core'][$property] = array(
+        '#type' => 'checkbox',
+        '#title' => $property, // No need to localize this
+        '#default_value' => !empty($usermerge_settings['core'][$property]) ? $usermerge_settings['core'][$property] : 0,
+      );
+    }
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration')
+  );
+
+  return $form;
+}
+
+function usermerge_settings_submit($form, &$form_state) {
+  form_state_values_clean($form_state);
+  foreach ( $form_state['values'] as $type => $values ) {
+    $usermerge_settings[$type] = $values;
+  }
+  variable_set('usermerge_settings', $usermerge_settings);
+}
+
+function usermerge_get_user_core_properties() {
+  // Define list of fields and other user data
+  // Using the columns in the user table, so non-field data added from other modules doesn't get mixed in
+  $user_entity_info = entity_get_info('user');
+  $properties = $user_entity_info['schema_fields_sql']['base table'];
+  // Adding roles
+  $properties[] = 'roles';
+
+  return $properties;
 }

@@ -73,7 +73,6 @@ function usermerge_self_merge_form_validate($form, &$form_state) {
     // If the entered used is the same as the current user, return an error message
     if ( $user_to_delete->uid == $user_to_keep->uid ) {
       form_set_error('usermerge_user_delete', t('You’re logged in using the same account you’re trying to merge. Please enter an e-mail address associated with a different account.'));
-      return FALSE;
     }
     // Allow alternate password hashing schemes.
     require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
@@ -81,20 +80,15 @@ function usermerge_self_merge_form_validate($form, &$form_state) {
     if ( user_check_password($form_state['values']['usermerge_user_delete_password'], $user_to_delete) ) {
       if ( $user_to_delete->uid == 1 ) {
         form_set_error('usermerge_user_delete', t('Blocking user 1 is not allowed.'));
-        return FALSE;
       }
     }
     else {
       form_set_error('usermerge_user_delete', t('Sorry, unrecognized e-mail address or password.'));
-      return FALSE;
     }
   }
   else {
     form_set_error('usermerge_user_delete', t('Sorry, unrecognized e-mail address or password.'));
-    return FALSE;
   }
-
-  return FALSE;
 }
 
 /**

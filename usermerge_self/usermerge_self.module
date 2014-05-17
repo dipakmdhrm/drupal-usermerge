@@ -23,12 +23,19 @@ function usermerge_self_menu() {
     'title' => 'Merge accounts',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('usermerge_self_merge_form', 1),
-    'access callback' => 'user_access',
-    'access arguments' => array('merge own accounts'),
+    'access callback' => 'usermerge_self_access',
+    'access arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
   );
 
   return $items;
+}
+
+/**
+ * Access callback for Self-Serve User Merge.
+ */
+function usermerge_self_access($account) {
+  return (($GLOBALS['user']->uid == $account->uid) && user_access('merge own accounts'));
 }
 
 /**

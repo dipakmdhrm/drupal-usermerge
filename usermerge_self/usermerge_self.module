@@ -46,7 +46,7 @@ function usermerge_self_merge_form($form, &$form_state) {
   drupal_set_title(t('Merge accounts'));
 
   $form['general']['usermerge_user_delete'] = array(
-    '#type' => 'emailfield',
+    '#type' => 'textfield',
     '#title' => t('The e-mail address of the account you wish to remove'),
     '#required' => TRUE,
   );
@@ -61,6 +61,10 @@ function usermerge_self_merge_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Merge accounts')
   );
+
+  if ( module_exists('html5tools') ) {
+    $form['general']['usermerge_user_delete']['#type'] = 'emailfield',
+  }
 
   if ( module_exists('password_toggle') ) {
     password_toggle_add_js_and_css();

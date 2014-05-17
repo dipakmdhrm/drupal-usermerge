@@ -22,6 +22,11 @@ Core-specific functionality (default user properties, fields) is managed in
 `uid` column, and basic display support for non-default user properties that
 aren't structured like fields (such as `rdf_mapping`).
 
+### Configuration page
+The configuration page is located at `admin/config/people/usermerge`, and allows
+admins to select which core properties of the user entity should be exposed in
+the review table. By default, no properties are exposed.
+
 ### Integration with other modules
 
 Immediate integration with other modules is contained in module-specific files in

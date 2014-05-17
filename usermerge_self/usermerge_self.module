@@ -63,7 +63,7 @@ function usermerge_self_merge_form($form, &$form_state) {
   );
 
   if ( module_exists('html5tools') ) {
-    $form['general']['usermerge_user_delete']['#type'] = 'emailfield',
+    $form['general']['usermerge_user_delete']['#type'] = 'emailfield';
   }
 
   if ( module_exists('password_toggle') ) {

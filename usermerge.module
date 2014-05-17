@@ -325,6 +325,75 @@ function usermerge_merge_accounts($user_to_delete, $user_to_keep, $form_values) 
 }
 
 /**
+ * Merges two accounts automatically, making decisions on which data should
+ * be preserved.
+ *
+ * Modules that need to implement a straightforward way to merge accounts should
+ * use this function.
+ *
+ * @param object $user_to_delete
+ *   A fully loaded user object from user_load() that will be merged and blocked or deleted.
+ * @param object $user_to_keep
+ *   A fully loaded user object from user_load() that will be merged and retained.
+ */
+function usermerge_do($user_to_delete, $user_to_keep) {
+  // Build (but not display) data-review form
+  usermerge_load_includes();
+  $review_form_state['values']['user_to_delete'] = $user_to_delete;
+  $review_form_state['values']['user_to_keep'] = $user_to_keep;
+
+  // This allows to call the data-review table instead of the account-selection form
+  $review_form_state['form_page'] = 'review_table';
+  $review_form = usermerge_merge_form(array(), $review_form_state);
+
+  // Build form values
+  // This makes a few assumptions on modules' behavior. It would be advisable to
+  // make the User Merge API documentation clearer on what modules should do.
+  $review_form_state['page_values']['merge_form'] = $review_form_state['values'];
+  $review = array_intersect_key($review_form['review'], array_flip(element_children($review_form['review'])));
+
+  foreach ( $review as $component => $items ) {
+    if ( isset($items['#value']) ) {
+      $review_form_state['values'][$component] = $items['#value'];
+    }
+    else {
+      $items = array_intersect_key($items, array_flip(element_children($items)));
+
+      foreach ( $items as $name => $properties ) {
+
+        if ( isset($properties['options']['#options']) ) {
+          // If the property has a merge options, merge data
+          if ( isset($properties['options']['#options']['merge']) && $properties['options']['#options']['merge'] == 'merge' ) {
+            $review_form_state['values']['review'][$component][$name]['options'] = 'merge';
+          }
+          // Otherwise use data from account to keep
+          else {
+            $review_form_state['values']['review'][$component][$name]['options'] = 'user_to_keep';
+          }
+        }
+        else {
+          // If there are no set options, check if the module sets other form fields
+          unset($properties['property_name'], $properties['options']);
+
+          if ( count($properties) ) {
+            foreach ( $properties as $property_name => $property ) {
+              if ( isset($property['#value']) ) {
+                $review_form_state['values']['review'][$component][$name][$property_name] = $property['#value'];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Merge accounts
+  // Force-delete old account
+  $review_form_state['page_values']['merge_form']['usermerge_user_delete_action'] = 'delete';
+  drupal_form_submit('usermerge_merge_form', $review_form_state);
+}
+
+/**
  * Implements hook_hook_info().
  */
 function usermerge_hook_info() {

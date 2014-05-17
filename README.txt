@@ -12,21 +12,35 @@ information loss.
 
 `usermerge.module` provides only the API, and doesn't actually do any merging of
 its own. It implements `hook_hook_info()`, so other modules can provide their
-own `<module>.usermerge.inc` files.
+own `<module>.usermerge.inc` files. It also provides the `usermerge_do()`
+function, which, given two user objects, merges them preserving information from
+the "new" account (a behavior similar to version 1, but which takes into account
+integration with other modules).
 
 Core-specific functionality (default user properties, fields) is managed in
 `usermerge.usermerge.inc`, which also includes support for entities that have a
 `uid` column, and basic display support for non-default user properties that
 aren't structured like fields (such as `rdf_mapping`).
 
-Immediate support for other modules is contained in module-specific files in
-the `includes` directory. These are loaded when needed by
-`usermerge_load_includes()` (since `usermerge_hook_info()` doesn't see them).
-Modules supported out of the box include:
+### Integration with other modules
+
+Immediate integration with other modules is contained in module-specific files in
+the `includes` directory.
+
+Modules supported out of the box:
 
 - Entity Reference
 - Multiple E-mail
 - Profile (code from User merge 1, left untouched)
+- Profile 2
 - RDF
 - Real Name
 - User Reference (References)
+- User Points
+
+### Self-Serve User Merge
+
+Self-Serve User Merge is a submodule that allows users with the "Merge own
+accounts" permission to merge a different account into the currently active one,
+by visiting `user/%/edit/merge`. The user will have to enter the e-mail address
+and password of the account that will be merged.

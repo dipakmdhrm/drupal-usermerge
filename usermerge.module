@@ -519,6 +519,9 @@ function usermerge_settings() {
   return $form;
 }
 
+/**
+ * Submit handler for the  User Merge settings form.
+ */
 function usermerge_settings_submit($form, &$form_state) {
   form_state_values_clean($form_state);
   foreach ( $form_state['values'] as $type => $values ) {
@@ -527,6 +530,9 @@ function usermerge_settings_submit($form, &$form_state) {
   variable_set('usermerge_settings', $usermerge_settings);
 }
 
+/**
+ * Default value for the User Merge settings variable.
+ */
 function usermerge_settings_default() {
   static $default;
 
@@ -543,6 +549,9 @@ function usermerge_settings_default() {
   return $default;
 }
 
+/**
+ * Returns an array of the core properties for the user entity.
+ */
 function usermerge_get_user_core_properties() {
   static $properties;
 

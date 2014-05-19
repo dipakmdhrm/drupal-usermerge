@@ -490,7 +490,7 @@ function usermerge_module_implements($hook) {
  * Form builder for User Merge settings.
  */
 function usermerge_settings() {
-  $usermerge_settings = variable_get('usermerge_settings', array());
+  $usermerge_settings = variable_get('usermerge_settings', usermerge_settings_default());
   $core_properties = usermerge_get_user_core_properties();
 
   $form['core'] = array(
@@ -527,13 +527,33 @@ function usermerge_settings_submit($form, &$form_state) {
   variable_set('usermerge_settings', $usermerge_settings);
 }
 
+function usermerge_settings_default() {
+  static $default;
+
+  if ( empty($default) ) {
+    $core_properties = usermerge_get_user_core_properties();
+
+    foreach ( $core_properties as $property ) {
+      if ( !in_array($property, array('uid', 'created', 'access', 'login', 'pass', 'name', 'mail', 'init', 'data', 'roles')) ) {
+        $default['core'][$property] = 0;
+      }
+    }
+  }
+
+  return $default;
+}
+
 function usermerge_get_user_core_properties() {
-  // Define list of fields and other user data
-  // Using the columns in the user table, so non-field data added from other modules doesn't get mixed in
-  $user_entity_info = entity_get_info('user');
-  $properties = $user_entity_info['schema_fields_sql']['base table'];
-  // Adding roles
-  $properties[] = 'roles';
+  static $properties;
+
+  if ( empty($properties) ) {
+    // Define list of fields and other user data
+    // Using the columns in the user table, so non-field data added from other modules doesn't get mixed in
+    $user_entity_info = entity_get_info('user');
+    $properties = $user_entity_info['schema_fields_sql']['base table'];
+    // Adding roles
+    $properties[] = 'roles';
+  }
 
   return $properties;
 }

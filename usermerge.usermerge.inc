@@ -68,7 +68,7 @@ function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) 
 
   // Set default choices for core properties
   // This could be defined via settings page
-  $usermerge_settings = variable_get('usermerge_settings', array());
+  $usermerge_settings = variable_get('usermerge_settings', usermerge_settings_default());
 
   foreach ( $usermerge_settings['core'] as $property_name => $setting_value ) {
     if ( empty($setting_value) ) {

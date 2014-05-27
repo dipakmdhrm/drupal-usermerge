@@ -35,8 +35,10 @@ function profile2_usermerge_account_properties($user_to_delete, $user_to_keep) {
 
     // Add all fields from that bundle.
     foreach (field_info_instances('profile2', $bundle) as $name => $info) {
+      $field_info = field_info_field($name);
       $item = array(
         'label' => str_replace(':', '', $info['label']),
+        'cardinality' => $field_info['cardinality'],
       );
 
       // Set the item.
@@ -88,8 +90,8 @@ function _profile2_usermerge_build_review_form_elements_by_bundle($properties, $
   $profile_delete = profile2_load_by_user($user_to_delete, $properties['type']);
   $profile_keep = profile2_load_by_user($user_to_keep, $properties['type']);
 
-  // Do nothing if one of the profiles doesn't exist.
-  if (empty($profile_delete) || empty($profile_keep)) {
+  // Do nothing if both of the profiles don't exist.
+  if (empty($profile_delete) && empty($profile_keep)) {
     $review['no_info']['property_name'] = array(
       '#type' => 'markup',
       '#markup' => t('Profile'),
@@ -118,10 +120,15 @@ function _profile2_usermerge_build_review_form_elements_by_bundle($properties, $
     $review[$name]['options'] = array(
       '#type' => 'radios',
       '#options' => array(
-        'user_to_delete' => $values['delete'],
-        'user_to_keep' => $values['keep'],
-      ),
+        'user_to_delete' => implode('<br />', $values['delete']),
+        'user_to_keep' => implode('<br />', $values['keep']),
+        'merge' => $info['cardinality'] != 1 && $values['delete'] != $values['keep'] ? 'merge' : 'no_merge',
+      ) ,
       '#default_value' => 'user_to_keep',
+    );
+    $review[$name]['cardinality'] = array(
+      '#type' => 'hidden',
+      '#value' => $info['cardinality'],
     );
 
     if (isset($info['criterion'])) {
@@ -143,42 +150,37 @@ function _profile2_usermerge_build_review_form_elements_by_bundle($properties, $
  *   The name of the field.
  *
  * @return array
- *   Renderable output for the field.
+ *   Array of field values.
  */
 function _profile2_usermerge_process_field($profile, $name) {
-  // Retrieve the field values.
-  $values = field_get_items('profile2', $profile, $name);
-
   // Default to empty text.
-  $ret = '';
+  $ret = array();
 
-  // Check that field_get_items returns an array.
-  if (is_array($values)) {
-    // Display single values.
-    if (count($values) == 1) {
-      $value = reset($values);
-      $view = field_view_value('profile2', $profile, $name, $value);
+  if ($profile) {
+    // Retrieve the field values.
+    $values = field_get_items('profile2', $profile, $name);
 
-      // Markup.
-      if (isset($view['#markup'])) {
-        // Take up to 50 characters from the markup.
-        $ret = drupal_substr(strip_tags($view['#markup']), 0, 50);
+    // Check that field_get_items returns an array.
+    if (is_array($values)) {
+      foreach ($values as $value) {
+        $view = field_view_value('profile2', $profile, $name, $value);
+
+        // Markup.
+        if (isset($view['#markup'])) {
+          // Take up to 50 characters from the markup.
+          $ret[] = drupal_substr(strip_tags($view['#markup']), 0, 50);
+        }
+        // Title.
+        elseif (isset($view['#title'])) {
+          $ret[] = drupal_substr(strip_tags($view['#title']), 0, 50);
+        }
+        // Otherwise render it.
+        else {
+          $ret[] = drupal_render($view);
+        }
       }
-      // Title.
-      elseif (isset($view['#title'])) {
-        $ret = drupal_substr(strip_tags($view['#title']), 0, 50);
-      }
-      // Can't display for now.
-      else {
-        $ret = t('Value Set - Error Displaying');
-      }
-    }
-    // Show that we are trying to merge in multiple values.
-    else {
-      $ret = t('Multiple Values (Array)');
     }
   }
-
   return $ret;
 }
 
@@ -211,16 +213,22 @@ function _profile2_usermerge_merge_accounts_by_bundle($bundle, $user_to_delete, 
   $profile_delete = profile2_load_by_user($user_to_delete, $bundle);
   $profile_keep = profile2_load_by_user($user_to_keep, $bundle);
 
-  // Do nothing if one of the profiles does not exist.
-  if (empty($profile_delete) || empty($profile_keep)) {
+  // Do nothing if both of the profiles do not exist; otherwise create any missing profiles.
+  if (empty($profile_delete) && empty($profile_keep)) {
     return;
+  }
+  elseif (empty($profile_delete)) {
+    $profile_delete = profile_create(array('type' => $bundle, 'uid' => $profile_keep->uid));
+  }
+  elseif (empty($profile_keep)) {
+    $profile_keep = profile_create(array('type' => $bundle, 'uid' => $profile_delete->uid));
   }
 
   // ===============
   // Merge fields based on review.
   // ===============
   foreach ($review as $name => $options) {
-    $option = reset($options);
+    $option = $options['options'];
 
     // Switch on the name.
     switch ($option) {
@@ -229,21 +237,31 @@ function _profile2_usermerge_merge_accounts_by_bundle($bundle, $user_to_delete, 
         $value = array();
 
         // Retrieve the languages.
-        $languages = array_merge(array_keys($profile_delete->$name), array_keys($profile_keep->$name));
+        $languages = array_unique(array_merge(array_keys($profile_delete->$name), array_keys($profile_keep->$name)));
 
         // Set language keys.
         foreach ($languages as $lang) {
           // Init to array.
           $value[$lang] = array();
 
-          // Add user to delete items.
-          if (!empty($profile_delete->$name[$lang])) {
-            $value[$lang] = array_merge($value[$lang], $profile_delete->$name[$lang]);
+          // Add user to keep items first.
+          if (!empty($profile_keep->{$name}[$lang])) {
+            $value[$lang] = $profile_keep->{$name}[$lang];
           }
 
-          // Add user to keep items.
-          if (!empty($profile_keep->$name[$lang])) {
-            $value[$lang] = array_merge($value[$lang], $profile_keep->$name[$lang]);
+          // Add user to delete items, remove duplicates.
+          if (!empty($profile_delete->{$name}[$lang])) {
+            $value[$lang] = array_merge($value[$lang], $profile_delete->{$name}[$lang]);
+
+            // Remove duplicates.
+            $serialized = array_map('serialize', $value[$lang]);
+            $serialized = array_values(array_unique($serialized));
+            $value[$lang] = array_map('unserialize', $serialized);
+          }
+
+          // Enforce maximum number of values.
+          if ($options['cardinality'] > 1) {
+            $value[$lang] = array_slice($value[$lang], 0, $options['cardinality']);
           }
         }
         break;

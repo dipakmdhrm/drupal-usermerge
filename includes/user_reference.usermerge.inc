@@ -150,7 +150,5 @@ function _user_reference_usermerge_get_referencing_entity_types() {
     }
   }
 
-  if ( count($referencing_entity_types) ) {
-    return $referencing_entity_types;
-  }
+  return $referencing_entity_types;
 }

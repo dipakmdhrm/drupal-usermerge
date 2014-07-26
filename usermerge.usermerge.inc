@@ -129,16 +129,14 @@ function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) 
     }
   }
 
-  if ( !empty($account_properties['entities']['items']) ) {
-    // Authored entitites
-    $account_properties['entities']['title'] = t('Authored entities');
+  // Authored entitites
+  $account_properties['entities']['title'] = t('Authored entities');
 
-    foreach ( usermerge_get_authorable_entities() as $entity_name => $entity ) {
-      $account_properties['entities']['items'][$entity_name] = array(
-        'name' => $entity_name,
-        'criterion' => 'no_merge'
-      );
-    }
+  foreach ( usermerge_get_authorable_entities() as $entity_name => $entity ) {
+    $account_properties['entities']['items'][$entity_name] = array(
+      'name' => $entity_name,
+      'criterion' => 'no_merge'
+    );
   }
 
   return $account_properties;

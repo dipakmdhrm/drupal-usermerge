@@ -218,10 +218,10 @@ function _profile2_usermerge_merge_accounts_by_bundle($bundle, $user_to_delete, 
     return;
   }
   elseif (empty($profile_delete)) {
-    $profile_delete = profile_create(array('type' => $bundle, 'uid' => $profile_keep->uid));
+    $profile_delete = profile_create(array('type' => $bundle, 'uid' => $user_to_delete->uid));
   }
   elseif (empty($profile_keep)) {
-    $profile_keep = profile_create(array('type' => $bundle, 'uid' => $profile_delete->uid));
+    $profile_keep = profile_create(array('type' => $bundle, 'uid' => $user_to_keep->uid));
   }
 
   // ===============

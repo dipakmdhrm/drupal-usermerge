@@ -268,13 +268,13 @@ function _profile2_usermerge_merge_accounts_by_bundle($bundle, $user_to_delete, 
 
       // Get value from delete.
       case 'user_to_delete':
-        $value = $profile_delete->$name;
+        $value = isset($profile_delete->$name) ? $profile_delete->$name : NULL;
         break;
 
       // User to keep is the default case.
       case 'user_to_keep':
       default:
-        $value = $profile_keep->$name;
+        $value = isset($profile_keep->$name) ? $profile_keep->$name : NULL;
         break;
     }
 

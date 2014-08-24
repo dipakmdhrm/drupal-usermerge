@@ -194,14 +194,11 @@ function theme_usermerge_data_review_form_table($variables) {
     }
   }
 
-  if ( isset($element['#description']) ) {
-    $description = "<p>" . $element['#description'] . "</p>\n";
-  }
-  else {
-    $description = '';
-  }
-
-  return '<h3>' . $element['#title'] . "</h3>\n" . $description . theme('table', $table);
+  return empty($table['rows'])
+            ? ''
+            : '<h3>' . $element['#title'] . "</h3>\n" .
+               (isset($element['#description']) ? "<p>" . $element['#description'] . "</p>\n" : '') .
+               theme('table', $table);
 }
 
 /**

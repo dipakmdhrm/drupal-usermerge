@@ -288,3 +288,12 @@ function _profile2_usermerge_merge_accounts_by_bundle($bundle, $user_to_delete, 
   // Delete the profile for the deleted user.
   profile2_delete($profile_delete);
 }
+
+/**
+ * Implements hook_usermerge_query_authored_entities_alter().
+ */
+function profile2_usermerge_query_authored_entities_alter(&$entities) {
+  // Prevent profile2 entities from being automatically merged as authoried entities because
+  // Profile2 supplies its own merging.
+  unset($entities['profile2']);
+}

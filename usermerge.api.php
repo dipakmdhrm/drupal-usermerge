@@ -283,6 +283,24 @@ function hook_usermerge_merge_accounts_alter($merged_account, $user_to_delete, $
 
   return $merged_account;
 }
+
+/**
+ * Alter authored entities which are automatically merged.
+ *
+ * @param array $entities
+ *    An array of arrays of entities that will be automatically merged, indexed
+ *    by entity type and then entity id.
+ * @param array $entity_types
+ *    An array of entity merge specifications, indexed by entity type, which
+ *    are eligible to be merged.
+ * @param integer $user_id
+ *    The user id of the account to be deleted.
+ */
+function hook_usermerge_query_authored_entities_alter(&$entities, $entity_types, $user_id) {
+  // Prevent profile2 entities from being automatically merged as authoried entities because
+  // Profile2 supplies its own merging.
+  unset($entities['profile2']);
+}
 /**
  *@} End of "addtogroup hooks".
  */

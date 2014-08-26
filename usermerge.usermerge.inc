@@ -331,7 +331,7 @@ function usermerge_query_authored_entities($entities, $user_id) {
       $found_entities[$entity_type] = $result[$entity_type];
     }
   }
-  drupal_alter('usermerge_query_authored_entities', $found_entities, $entites, $user_id);
+  drupal_alter('usermerge_query_authored_entities', $found_entities, $entities, $user_id);
   return $found_entities;
 }
 

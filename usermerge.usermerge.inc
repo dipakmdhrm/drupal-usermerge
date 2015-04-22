@@ -181,10 +181,24 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
           $field_user_to_delete = $user_to_delete->{$property_name};
           $field_user_to_keep = $user_to_keep->{$property_name};
 
-          // Roles must be dealt with separately
-          if ( $property_name == 'roles' ) {
-            $field_user_to_delete = implode(', ', $user_to_delete->{$property_name});
-            $field_user_to_keep = implode(', ', $user_to_keep->{$property_name});
+          switch ( $property_name ) {
+            // Roles must be dealt with separately
+            case 'roles' :
+              $field_user_to_delete = implode(', ', $user_to_delete->{$property_name});
+              $field_user_to_keep = implode(', ', $user_to_keep->{$property_name});
+            break;
+
+            case 'picture' :
+              if ( $user_to_delete->{$property_name} ) {
+                $filepath_user_to_delete = image_style_url('thumbnail', $user_to_delete->{$property_name}->uri);
+                $field_user_to_delete = theme('image', array('path' => $filepath_user_to_delete));
+              }
+
+              if ( $user_to_keep->{$property_name} ) {
+                $filepath_user_to_keep = image_style_url('thumbnail', $user_to_keep->{$property_name}->uri);
+                $field_user_to_keep = theme('image', array('path' => $filepath_user_to_keep));
+              }
+            break;
           }
 
           // Process custom fields for display

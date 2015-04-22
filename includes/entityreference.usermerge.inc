@@ -137,19 +137,16 @@ function entityreference_usermerge_merge_accounts($user_to_delete, $user_to_keep
  * Selects entities that reference users via the Entity Reference module.
  */
 function _entityreference_usermerge_get_referencing_entity_types() {
-  $fields = field_info_instances();
-
+  $fields = field_info_fields();
   $referencing_entity_types = array();
 
-  foreach ( $fields as $entity_type => $entity ) {
-    foreach ( $entity as $bundle => $fieldlist ) {
-      foreach ( $fieldlist as $field => $properties ) {
-        if ( $properties['widget']['module'] == 'entityreference' ) {
-          $properties = field_info_field($field);
-          // Select only fields that are referencing user entities
-          if ( $properties['settings']['target_type'] == 'user') {
-            $referencing_entity_types[$entity_type][$field] = $properties;
-          }
+  foreach ( $fields as $field_name => $field ) {
+    if ( 'entityreference' == $field['type'] ) {
+
+      // Select only fields that are referencing user entities
+      if ( $field['settings']['target_type'] == 'user' ) {
+        foreach ( $field['bundles'] as $entity_type => $bundles ) {
+          $referencing_entity_types[$entity_type][$field_name] = $field;
         }
       }
     }

@@ -16,7 +16,7 @@ function usermerge_usermerge_actions_supported() {
 /**
  * Implement hook_usermerge_account_properties().
  */
-function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) {
+function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep, $action) {
   $user_entity_properties['core'] = usermerge_get_user_core_properties();
 
   // Define an array of properties that can be used to display the data-review table(s)
@@ -75,6 +75,14 @@ function usermerge_usermerge_account_properties($user_to_delete, $user_to_keep) 
       // If the property is not checked in settings, set a default
       $account_properties['core']['items'][$property_name]['default'] = $user_to_keep->{$property_name};
     }
+  }
+
+  // Always show uid, mail, and name, regarless of whether they can be editted.
+  foreach ( array('uid', 'mail', 'name') as $property_name ) {
+    if ( isset($account_properties['core']['items'][$property_name]['default']) || $action != 'delete' ) {
+      $account_properties['core']['items'][$property_name]['disabled'] = TRUE;
+    }
+    unset($account_properties['core']['items'][$property_name]['default']);
   }
 
   // Automatically handle properties that can't be exposed via settings:
@@ -240,8 +248,8 @@ function usermerge_usermerge_build_review_form_elements($review, $account_proper
               break;
             case 'no_merge' :
               $review[$property_type][$property_name]['options']['#options']['merge'] = 'no_merge';
-              // uid, name, and mail should be visible but disabled
-              if ( in_array($property_name, array('uid', 'name', 'mail')) ) {
+              // uid and (if not editable, mail and name) should be visible but disabled.
+              if ( !empty($property['disabled']) ) {
                 $review[$property_type][$property_name]['options']['#disabled'] = TRUE;
               }
             break;

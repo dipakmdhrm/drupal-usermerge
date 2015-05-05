@@ -36,7 +36,7 @@ function multiple_email_form_usermerge_data_review_form_alter(&$form, $user_to_d
 /**
  * Implements hook_usermerge_account_properties() on behalf of multiple_email.
  */
-function multiple_email_usermerge_account_properties($user_to_delete, $user_to_keep) {
+function multiple_email_usermerge_account_properties($user_to_delete, $user_to_keep, $action) {
   $account_properties['multiple_email'] = array(
     'title' => t('Multiple E-mail'),
     'items' => array(

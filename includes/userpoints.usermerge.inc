@@ -17,7 +17,7 @@ function userpoints_usermerge_actions_supported() {
 /**
  * Implements hook_usermerge_account_properties() on behalf of userpoints.
  */
-function userpoints_usermerge_account_properties($user_to_delete, $user_to_keep) {
+function userpoints_usermerge_account_properties($user_to_delete, $user_to_keep, $action) {
   $account_properties['userpoints'] = array(
     'title' => t('Userpoints'),
     'items' => array(

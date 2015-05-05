@@ -29,8 +29,10 @@ function hook_usermerge_actions_supported() {
  *   The full object of the user to be deleted.
  * @param $user_to_keep
  *   The full object of the user to be kept.
+ * @param $action
+ *   'delete' or 'block'. Usually does not affect the properties.
  */
-function hook_usermerge_account_properties($user_to_delete, $user_to_keep) {
+function hook_usermerge_account_properties($user_to_delete, $user_to_keep, $action) {
   // Example taken from usermerge_usermerge_account_properties()
 
   // Define list of fields and other user data
@@ -157,10 +159,12 @@ function hook_usermerge_account_properties($user_to_delete, $user_to_keep) {
  *   The full object of the user to be deleted.
  * @param $user_to_keep
  *   The full object of the user to be kept.
+ * @param $action
+ *   'delete' or 'block'. Usually does not affect the properties.
  *
  * @see hook_usermerge_account_properties()
  */
-function hook_usermerge_account_properties_alter(&$properties, $user_to_delete, $user_to_keep) {
+function hook_usermerge_account_properties_alter(&$properties, $user_to_delete, $user_to_keep, $action) {
   // Example taken from rdf_usermerge_account_properties_alter()
 
   // Sets the default to the value of $user_to_keep

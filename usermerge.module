@@ -121,11 +121,12 @@ function usermerge_data_review_form($form, &$form_state) {
 
   $user_to_delete = $form_state['values']['user_to_delete'];
   $user_to_keep = $form_state['values']['user_to_keep'];
+  $action = $form_state['page_values']['merge_form']['usermerge_user_delete_action'];
 
   // Invoke hook_usermerge_account_properties
-  $account_properties = usermerge_invoke_all('usermerge_account_properties', $user_to_delete, $user_to_keep);
+  $account_properties = usermerge_invoke_all('usermerge_account_properties', $user_to_delete, $user_to_keep, $action);
   // Allow modules to alter pre-existing account properties
-  drupal_alter('usermerge_account_properties', $account_properties, $user_to_delete, $user_to_keep);
+  drupal_alter('usermerge_account_properties', $account_properties, $user_to_delete, $user_to_keep, $action);
 
   $form['review'] = usermerge_invoke_all('usermerge_build_review_form_elements', array(), $account_properties, $user_to_delete, $user_to_keep);
 
@@ -298,12 +299,8 @@ function usermerge_merge_accounts($user_to_delete, $user_to_keep, $form_values) 
     $merged_account->pass = $user_to_keep->pass;
     $merged_account->status = 1;
 
-    // Save merged account
-    user_save($merged_account);
-
-    drupal_set_message(t('%user_to_delete was successfully merged into %user_to_keep', array('%user_to_delete' => $user_to_delete->name, '%user_to_keep' => $user_to_keep->name)));
-
-    // Block or delete old account
+    // Block or delete old account. Do this before saving the new account in
+    // case the merged account is using the deleted account's mail or name.
     switch ( $form_values['usermerge_user_delete_action'] ) {
       case 'block' :
         user_block_user_action($user_to_delete);
@@ -313,6 +310,12 @@ function usermerge_merge_accounts($user_to_delete, $user_to_keep, $form_values) 
         user_delete($user_to_delete->uid);
       break;
     }
+
+    // Save merged account
+    user_save($merged_account);
+
+    drupal_set_message(t('%user_to_delete was successfully merged into %user_to_keep', array('%user_to_delete' => $user_to_delete->name, '%user_to_keep' => $user_to_keep->name)));
+
 
     return TRUE;
   }
@@ -499,7 +502,7 @@ function usermerge_settings() {
 
   foreach ( $core_properties as $property ) {
     // For some properties there is never a choice
-    if ( !in_array($property, array('uid', 'created', 'access', 'login', 'pass', 'name', 'mail', 'init', 'data', 'roles')) ) {
+    if ( !in_array($property, array('uid', 'created', 'access', 'login', 'pass', 'init', 'data', 'roles')) ) {
       $form['core'][$property] = array(
         '#type' => 'checkbox',
         '#title' => $property, // No need to localize this

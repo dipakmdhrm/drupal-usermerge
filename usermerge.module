@@ -528,6 +528,7 @@ function usermerge_settings_submit($form, &$form_state) {
     $usermerge_settings[$type] = $values;
   }
   variable_set('usermerge_settings', $usermerge_settings);
+  drupal_set_message('The User Merge settings have been saved.');
 }
 
 /**

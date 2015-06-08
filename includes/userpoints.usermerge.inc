@@ -61,7 +61,7 @@ function userpoints_usermerge_build_review_form_elements($review, $account_prope
     ),
   );
 
-  if ( isset($properties['description']) ) {
+  if (isset($properties['description'])) {
     $review['userpoints']['#description'] = $properties['description'];
   }
 
@@ -74,7 +74,7 @@ function userpoints_usermerge_build_review_form_elements($review, $account_prope
 function userpoints_usermerge_merge_accounts($user_to_delete, $user_to_keep, $review) {
   $points_to_keep = $review['userpoints']['userpoints']['options'];
 
-  if ( $points_to_keep == 'merge' ) {
+  if ($points_to_keep == 'merge') {
     $query = db_update('userpoints_txn')
       ->fields(array(
         'uid' => $user_to_keep->uid

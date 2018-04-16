@@ -53,6 +53,8 @@ function profile2_usermerge_account_properties($user_to_delete, $user_to_keep, $
  * Implements hook_usermerge_build_review_form_elements().
  */
 function profile2_usermerge_build_review_form_elements($review, $account_properties, $user_to_delete, $user_to_keep) {
+  $review['profile2'] = array();
+
   // Iterate through each bundle.
   foreach ($account_properties['profile2'] as $bundle => $properties) {
     // Generate form based on items.

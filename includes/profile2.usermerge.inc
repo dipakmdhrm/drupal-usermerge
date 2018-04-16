@@ -190,6 +190,9 @@ function _profile2_usermerge_process_field($profile, $name) {
  * Implements hook_usermerge_merge_accounts().
  */
 function profile2_usermerge_merge_accounts($user_to_delete, $user_to_keep, $review) {
+  if (empty($review['profile2'])) {
+    return;
+  }
   // Iterate through each bundle.
   foreach ($review['profile2'] as $bundle => $options) {
     // User merge on each bundle.

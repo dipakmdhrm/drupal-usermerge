@@ -10,7 +10,7 @@
  */
 function profile2_usermerge_actions_supported() {
   return array(
-    'profile' => t('Merge Profile 2 profiles.'),
+    'profile2' => t('Merge Profile 2 profiles.'),
   );
 }
 

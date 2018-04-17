@@ -222,10 +222,10 @@ function _profile2_usermerge_merge_accounts_by_bundle($bundle, $user_to_delete, 
   if (empty($profile_delete) && empty($profile_keep)) {
     return;
   }
-  elseif (empty($profile_delete)) {
+  if (empty($profile_delete)) {
     $profile_delete = profile_create(array('type' => $bundle, 'uid' => $user_to_delete->uid));
   }
-  elseif (empty($profile_keep)) {
+  if (empty($profile_keep)) {
     $profile_keep = profile_create(array('type' => $bundle, 'uid' => $user_to_keep->uid));
   }
 
@@ -240,9 +240,11 @@ function _profile2_usermerge_merge_accounts_by_bundle($bundle, $user_to_delete, 
       // Get value from merge (nust be an array).
       case 'merge':
         $value = array();
+        $field_delete = isset($profile_delete->$name) ? $profile_delete->$name : array();
+        $field_keep = isset($profile_keep->$name) ? $profile_keep->$name : array();
 
         // Retrieve the languages.
-        $languages = array_unique(array_merge(array_keys($profile_delete->$name), array_keys($profile_keep->$name)));
+        $languages = array_unique(array_merge(array_keys($field_delete), array_keys($field_keep)));
 
         // Set language keys.
         foreach ($languages as $lang) {
@@ -250,13 +252,13 @@ function _profile2_usermerge_merge_accounts_by_bundle($bundle, $user_to_delete, 
           $value[$lang] = array();
 
           // Add user to keep items first.
-          if (!empty($profile_keep->{$name}[$lang])) {
-            $value[$lang] = $profile_keep->{$name}[$lang];
+          if (!empty($field_keep[$lang])) {
+            $value[$lang] = $field_keep[$lang];
           }
 
           // Add user to delete items, remove duplicates.
-          if (!empty($profile_delete->{$name}[$lang])) {
-            $value[$lang] = array_merge($value[$lang], $profile_delete->{$name}[$lang]);
+          if (!empty($field_delete[$lang])) {
+            $value[$lang] = array_merge($value[$lang], $field_delete[$lang]);
 
             // Remove duplicates.
             $serialized = array_map('serialize', $value[$lang]);

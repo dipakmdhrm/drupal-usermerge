@@ -14,7 +14,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
  * @UserMergeProperty(
  *   id = "property_comment",
  *   name = @Translation("Comment data"),
- *   description = @Translation("Reassigning comments associated with the retired user."),
+ *   description = @Translation("Reassign comments associated with the retired user."),
  *   review = "",
  *   provider = "comment"
  * )

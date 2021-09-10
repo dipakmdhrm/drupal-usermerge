@@ -10,7 +10,7 @@ use Drupal\user\UserInterface;
  * @UserMergeProperty(
  *   id = "property_user",
  *   name = @Translation("Account data"),
- *   description = @Translation("Choosing which user information (default properties and custom fields, if available) should be kept, discarded, or merged."),
+ *   description = @Translation("Choose which user information (default properties and custom fields, if available) should be kept, discarded, or merged."),
  *   review = "\Drupal\usermerge\Form\ReviewUserForm",
  * )
  * @package Drupal\usermerge\Plugin\UserMerge\Property

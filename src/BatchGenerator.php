@@ -80,10 +80,10 @@ class BatchGenerator implements BatchGeneratorInterface {
    */
   public function createBatch(): void {
     $batch = [
-      'title' => $this->t('Merge account...'),
+      'title' => $this->t('Merge account…'),
       'init_message' => $this->t('Starting merge process.'),
       'progress_message' => $this->t('Completed step @current of @total.'),
-      'error_message' => $this->t('Merge process has encountered an error.'),
+      'error_message' => $this->t('There was an error in the merge process.'),
       'operations' => [],
       'finished' => [$this, 'batchFinished'],
       'progressive' => TRUE,

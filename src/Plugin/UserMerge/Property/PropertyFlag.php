@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @UserMergeProperty(
  *   id = "property_flag",
  *   name = @Translation("Flag data"),
- *   description = @Translation("Reassigning flaging entities associated with the retired user."),
+ *   description = @Translation("Reassign flaging entities associated with the retired user."),
  *   review = "",
  *   provider = "flag"
  * )

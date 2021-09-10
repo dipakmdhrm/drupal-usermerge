@@ -10,10 +10,10 @@ services:
     arguments: ['@plugin.manager.usermerge.property']
   usermerge.batch_generator:
     class: Drupal\usermerge\BatchGenerator
-    arguments: ['@usermerge.user_merger', '@messenger', '@usermerge.multi_step_storage', '@entity.manager']
+    arguments: ['@usermerge.user_merger', '@messenger', '@usermerge.multi_step_storage', '@entity_type.manager']
   usermerge.multi_step_storage:
     class: Drupal\usermerge\MultiStepStorage
-    arguments: ['@tempstore.private', '@entity.manager']
+    arguments: ['@tempstore.private', '@entity_type.manager']
   usermerge.user_merger:
     class: Drupal\usermerge\UserMerger
     arguments: ['@plugin.manager.usermerge.property', '@plugin.manager.usermerge.action']

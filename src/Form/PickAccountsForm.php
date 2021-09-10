@@ -137,7 +137,7 @@ class PickAccountsForm extends MultiStepFormBase {
     }
 
     if ($retire == $retain) {
-      $form_state->setErrorByName('retire', $this->t("You must pick a different account from the one you're retiring."));
+      $form_state->setErrorByName('retain', $this->t("You must pick a different account from the one you're retiring."));
     }
   }
 

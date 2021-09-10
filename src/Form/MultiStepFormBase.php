@@ -72,7 +72,7 @@ abstract class MultiStepFormBase extends FormBase {
     if ($this->reviewSwitcher->hasPrevious(static::class)) {
       $form['actions']['previous'] = [
         '#type' => 'submit',
-        '#value' => $this->t('Back'),
+        '#value' => $this->t('Go back'),
         '#button_type' => 'primary',
         '#weight' => 10,
         '#submit' => ['::submitGoBack'],
@@ -82,7 +82,7 @@ abstract class MultiStepFormBase extends FormBase {
     if ($this->reviewSwitcher->hasNext(static::class)) {
       $form['actions']['next'] = [
         '#type' => 'submit',
-        '#value' => $this->t('Next'),
+        '#value' => $this->t('Continue'),
         '#button_type' => 'primary',
         '#weight' => 10,
         '#submit' => ['::submitForm', '::submitGoNext'],
@@ -91,7 +91,7 @@ abstract class MultiStepFormBase extends FormBase {
     else {
       $form['actions']['submit'] = [
         '#type' => 'submit',
-        '#value' => $this->t('Submit'),
+        '#value' => $this->t('Merge accounts'),
         '#button_type' => 'primary',
         '#weight' => 10,
         '#submit' => ['::submitForm', '::submitCreateBatch'],

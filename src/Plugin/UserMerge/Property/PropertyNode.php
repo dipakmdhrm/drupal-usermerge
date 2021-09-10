@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @UserMergeProperty(
  *   id = "property_node",
  *   name = @Translation("Node data"),
- *   description = @Translation("Reassigning nodes owned by the retired user."),
+ *   description = @Translation("Reassign nodes owned by the retired user."),
  *   review = "",
  * )
  * @package Drupal\usermerge\Plugin\UserMerge\Property

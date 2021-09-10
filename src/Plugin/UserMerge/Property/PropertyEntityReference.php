@@ -16,7 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @UserMergeProperty(
  *   id = "property_entity_reference",
  *   name = @Translation("Entity reference"),
- *   description = @Translation("Reassigning user reference fields associated with the retired use"),
+ *   description = @Translation("Reassign user-reference fields associated with the retired user."),
  *   review = "",
  * )
  * @package Drupal\usermerge\Plugin\UserMerge\Property

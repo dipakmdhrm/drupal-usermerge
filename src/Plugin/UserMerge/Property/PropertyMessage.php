@@ -14,7 +14,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
  * @UserMergeProperty(
  *   id = "property_message",
  *   name = @Translation("Message data"),
- *   description = @Translation("Reassigning message entities associated with the retired user."),
+ *   description = @Translation("Reassign message entities associated with the retired user."),
  *   review = "",
  *   provider = "message"
  * )

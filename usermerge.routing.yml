@@ -1,0 +1,10 @@
+usermerge.multi_step_form:
+  path: 'admin/people/merge/{property}'
+  defaults:
+    _controller: '\Drupal\usermerge\Controller\MultiStepFormController::content'
+    _title: 'Merge accounts'
+    property: ''
+  options:
+    no_cache: TRUE
+  requirements:
+    _permission: 'merge accounts'

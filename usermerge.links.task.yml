@@ -1,0 +1,5 @@
+usermerge.multi_step_form:
+  title: 'Merge accounts'
+  route_name: usermerge.multi_step_form
+  base_route: entity.user.collection
+  weight: 15

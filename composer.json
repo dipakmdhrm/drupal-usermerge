@@ -1,0 +1,18 @@
+{
+    "name": "drupal/usermerge",
+    "description": "Provides an advanced mechanism to merge user accounts together.",
+    "type": "drupal-module",
+    "homepage": "https://www.drupal.org/project/usermerge",
+    "authors": [
+        {
+            "name": "Antonio Savorelli (antiorario)",
+            "homepage": "https://www.drupal.org/u/antiorario",
+            "role": "Maintainer"
+        },
+        {
+            "name": "Adrian Lorenc (alorenc)",
+            "homepage": "https://www.drupal.org/u/alorenc",
+            "role": "Co-maintainer"
+        }
+    ]
+}

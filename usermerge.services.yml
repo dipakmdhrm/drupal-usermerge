@@ -1,0 +1,19 @@
+services:
+  plugin.manager.usermerge.action:
+    class: Drupal\usermerge\Plugin\UserMergeActionPluginManager
+    parent: default_plugin_manager
+  plugin.manager.usermerge.property:
+    class: Drupal\usermerge\Plugin\UserMergePropertyPluginManager
+    parent: default_plugin_manager
+  usermerge.review_form_switcher:
+    class: Drupal\usermerge\ReviewFormSwitcher
+    arguments: ['@plugin.manager.usermerge.property']
+  usermerge.batch_generator:
+    class: Drupal\usermerge\BatchGenerator
+    arguments: ['@usermerge.user_merger', '@messenger', '@usermerge.multi_step_storage', '@entity.manager']
+  usermerge.multi_step_storage:
+    class: Drupal\usermerge\MultiStepStorage
+    arguments: ['@tempstore.private', '@entity.manager']
+  usermerge.user_merger:
+    class: Drupal\usermerge\UserMerger
+    arguments: ['@plugin.manager.usermerge.property', '@plugin.manager.usermerge.action']

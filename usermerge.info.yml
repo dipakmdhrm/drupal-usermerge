@@ -1,0 +1,5 @@
+name: User Merge
+type: module
+description: Provides an advanced mechanism to merge user accounts together.
+core_version_requirement: ^8.7.7 || ^9
+package: User management

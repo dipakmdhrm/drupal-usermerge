@@ -1,0 +1,4 @@
+'merge accounts':
+  title: 'Merge accounts'
+  description: 'User with this permission is able to merge accounts.'
+  restrict access: TRUE

@@ -34,6 +34,7 @@ class PropertyMessage extends UserMergePropertyBase {
     }
 
     $message_ids = $message_storage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('uid', $retired->id())
       ->execute();
 

@@ -78,6 +78,7 @@ class PropertyFlag extends UserMergePropertyBase {
     }
 
     $flaggings_ids = $flagging_storage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('uid', $retired->id())
       ->sort('flag_id')
       ->execute();

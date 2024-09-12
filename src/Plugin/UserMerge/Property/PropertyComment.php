@@ -34,6 +34,7 @@ class PropertyComment extends UserMergePropertyBase {
     }
 
     $comment_ids = $comment_storage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('uid', $retired->id())
       ->execute();
 

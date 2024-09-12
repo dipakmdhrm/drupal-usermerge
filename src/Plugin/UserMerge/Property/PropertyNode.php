@@ -77,6 +77,7 @@ class PropertyNode extends UserMergePropertyBase {
 
     // Anonymize nodes (current revisions).
     $node_ids = $node_storage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('uid', $retired->id())
       ->execute();
 
